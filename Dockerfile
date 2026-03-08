@@ -64,5 +64,10 @@ VOLUME ["/data"]
 
 EXPOSE 80
 
+# Health check: hit nginx every 30s; give the container 10s to start up.
+# wget is already available (installed via apk above).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost/ || exit 1
+
 # supervisord manages both nginx and pocketbase
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
