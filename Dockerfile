@@ -14,7 +14,7 @@ RUN npm ci
 
 # Copy source and build
 COPY apps/web ./apps/web
-RUN npm run build --prefix apps/web
+RUN npm --prefix apps/web run build
 
 
 # ════════════════════════════════════════════════════════
@@ -52,7 +52,7 @@ COPY apps/pocketbase/pb_migrations/ /app/pocketbase/pb_migrations/
 COPY apps/pocketbase/pb_hooks/      /app/pocketbase/pb_hooks/
 
 # ── Copy built frontend ──────────────────────────────────────────────────────
-COPY --from=web-builder /app/apps/web/dist /usr/share/nginx/html
+COPY --from=web-builder /app/dist/apps/web /usr/share/nginx/html
 
 # ── Copy runtime configs ─────────────────────────────────────────────────────
 COPY deploy/nginx.conf       /etc/nginx/nginx.conf
