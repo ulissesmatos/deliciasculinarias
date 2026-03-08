@@ -609,7 +609,7 @@ const BlogArticleEditor = () => {
                   <h2 className="font-semibold text-gray-900">Categoria</h2>
                   <button
                     type="button"
-                    onClick={() => { setShowNewCat(v => !v); setNewCatName(''); setEditingCatId(null); }}
+                    onClick={() => { setShowNewCat(v => !v); setNewCatNames({ pt: '', en: '', es: '' }); setEditingCatId(null); }}
                     className={`p-1.5 rounded-lg transition-colors ${
                       showNewCat ? 'bg-primary text-white' : 'text-primary hover:bg-primary/10'
                     }`}

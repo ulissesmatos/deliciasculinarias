@@ -149,6 +149,9 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        // Disable built-in link & underline so our explicit extensions take precedence
+        link: false,
+        underline: false,
       }),
       Underline,
       Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-primary underline' } }),
