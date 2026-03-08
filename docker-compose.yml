@@ -1,0 +1,25 @@
+# docker-compose.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# For Coolify: point your resource to this repo and Coolify will use this file.
+# For local testing: docker compose up --build
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      # Persistent PocketBase data (DB + uploaded files)
+      - pb_data:/data
+    environment:
+      # Optional: set a random string to encrypt PocketBase's SQLite database.
+      # If omitted, data is stored unencrypted (still protected by your server's
+      # filesystem permissions).
+      - PB_ENCRYPTION_KEY=${PB_ENCRYPTION_KEY:-}
+    restart: unless-stopped
+
+volumes:
+  pb_data:

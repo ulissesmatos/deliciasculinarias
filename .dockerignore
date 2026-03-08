@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+apps/web/node_modules
+apps/pocketbase/node_modules
+
+# Windows PocketBase binary (Docker downloads the Linux one)
+apps/pocketbase/pocketbase.exe
+
+# Local PocketBase data (never ship data in the image)
+apps/pocketbase/pb_data
+apps/pocketbase/pb_data/
+apps/pocketbase/pb_data_local
+apps/pocketbase/pb_data_local/
+
+# Build output (rebuilt inside Docker)
+apps/web/dist
+apps/web/.vite
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# Dev and test
+*.test.*
+*.spec.*
