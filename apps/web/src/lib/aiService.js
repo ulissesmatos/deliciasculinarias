@@ -10,6 +10,16 @@
  */
 
 import { getAIConfig, getActiveProvider, getAPIKey, getModel } from './aiConfig.js';
+import { marked } from 'marked';
+
+/**
+ * Convert Markdown string to HTML for use in the TipTap rich text editor.
+ * marked is configured with breaks:true so single newlines become <br>.
+ */
+function markdownToHtml(md) {
+  if (!md) return '';
+  return marked.parse(md, { async: false, breaks: false, gfm: true });
+}
 
 /* ------------------------------------------------------------------ */
 /*  Endpoints                                                          */
@@ -250,7 +260,9 @@ Rules for content:
   ];
 
   const raw = await chatCompletion(messages, { temperature: 0.8 });
-  return parseJSONResponse(raw);
+  const parsed = parseJSONResponse(raw);
+  if (parsed?.content) parsed.content = markdownToHtml(parsed.content);
+  return parsed;
 }
 
 /**
@@ -288,7 +300,9 @@ IMPORTANT: Respond ONLY with a valid JSON object. Preserve Markdown formatting, 
   ];
 
   const raw = await chatCompletion(messages, { temperature: 0.3 });
-  return parseJSONResponse(raw);
+  const parsed = parseJSONResponse(raw);
+  if (parsed?.content) parsed.content = markdownToHtml(parsed.content);
+  return parsed;
 }
 
 /**
