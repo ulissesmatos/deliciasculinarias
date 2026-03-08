@@ -9,8 +9,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
+    # Port 80 is exposed internally; Coolify's reverse proxy routes traffic to it.
+    # For local testing, uncomment: ports: ["80:80"]
     volumes:
       # Persistent PocketBase data (DB + uploaded files)
       - pb_data:/data
