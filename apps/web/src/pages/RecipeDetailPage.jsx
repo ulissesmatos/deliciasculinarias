@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Clock, Users, Share2, Facebook, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -8,13 +8,16 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { getTranslation } from '@/lib/translations.js';
+import { route } from '@/lib/routes.js';
 import IngredientChecklist from '@/components/IngredientChecklist.jsx';
 import AffiliateProductCard from '@/components/AffiliateProductCard.jsx';
 import CommentSection from '@/components/CommentSection.jsx';
+import HreflangTags from '@/components/HreflangTags.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
 const RecipeDetailPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const [recipe, setRecipe] = useState(null);
   const [affiliateProducts, setAffiliateProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,32 +25,73 @@ const RecipeDetailPage = () => {
   const { t, language } = useLanguage();
 
   useEffect(() => {
-    fetchRecipe();
-    fetchAffiliateProducts();
-  }, [id]);
+    let cancelled = false;
 
-  const fetchRecipe = async () => {
-    try {
-      const record = await pb.collection('recipes').getOne(id, {
-        $autoCancel: false
-      });
-      setRecipe(record);
-    } catch (error) {
-      console.error('Error fetching recipe:', error);
-      toast({
-        title: t('common.error'),
-        description: 'Failed to load recipe',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
+    const fetchRecipe = async () => {
+      setLoading(true);
+      try {
+        let record;
+        try {
+          record = await pb.collection('recipes').getFirstListItem(
+            pb.filter(`slug_${language} = {:slug}`, { slug }),
+            { requestKey: null }
+          );
+        } catch (err) {
+          if (cancelled) return;
+          if (err?.name === 'AbortError' || err?.isAbort) throw err;
+          for (const fallbackLang of ['pt', 'en', 'es'].filter(l => l !== language)) {
+            try {
+              record = await pb.collection('recipes').getFirstListItem(
+                pb.filter(`slug_${fallbackLang} = {:slug}`, { slug }),
+                { requestKey: null }
+              );
+              break;
+            } catch { /* continue */ }
+          }
+          if (!record) {
+            if (/^[a-z0-9]{15}$/i.test(slug)) {
+              record = await pb.collection('recipes').getOne(slug, { requestKey: null });
+            } else {
+              throw new Error('not found');
+            }
+          }
+        }
+        if (cancelled) return;
+        setRecipe(record);
+      } catch (error) {
+        if (cancelled || error?.name === 'AbortError' || error?.isAbort) return;
+        console.error('Error fetching recipe:', error);
+        toast({
+          title: t('common.error'),
+          description: 'Failed to load recipe',
+          variant: 'destructive'
+        });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    fetchRecipe();
+    return () => { cancelled = true; };
+  }, [slug, language]);
+
+  // After loading, correct the URL to the canonical slug for the active language
+  useEffect(() => {
+    if (!recipe) return;
+    const canonicalSlug = recipe[`slug_${language}`] || recipe.slug_pt || recipe.id;
+    if (canonicalSlug && canonicalSlug !== slug) {
+      navigate(route(language, 'recipe', { slug: canonicalSlug }), { replace: true });
     }
-  };
+  }, [recipe, language]);
+
+  useEffect(() => {
+    if (recipe?.id) fetchAffiliateProducts();
+  }, [recipe?.id]);
 
   const fetchAffiliateProducts = async () => {
     try {
       const records = await pb.collection('affiliate_products').getFullList({
-        filter: pb.filter('recipe_id = {:id}', { id }),
+        filter: pb.filter('recipe_id = {:id}', { id: recipe.id }),
         $autoCancel: false
       });
       setAffiliateProducts(records);
@@ -105,12 +149,16 @@ const RecipeDetailPage = () => {
   const ingredients = getTranslation(recipe, 'ingredients', language) || recipe.ingredients || [];
   const instructions = getTranslation(recipe, 'instructions', language) || recipe.instructions || [];
 
-  const imageUrl = recipe.featured_image 
-    ? pb.files.getUrl(recipe, recipe.featured_image, { thumb: '800x600' })
-    : 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800';
+  const imageUrl = recipe.featured_image_url
+    || (recipe.featured_image
+      ? pb.files.getURL(recipe, recipe.featured_image, { thumb: '800x600' })
+      : 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800');
+
+  const recipeId = recipe?.id || slug;
 
   return (
     <>
+      <HreflangTags routeName="recipe" params={{ id: recipeId }} />
       <Helmet>
         <title>{`${title} - ${t('home.title')}`}</title>
         <meta name="description" content={description || `Learn how to make ${title}`} />

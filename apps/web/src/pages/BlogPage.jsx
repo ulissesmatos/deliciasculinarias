@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { getTranslation } from '@/lib/translations.js';
 import BlogCard from '@/components/BlogCard.jsx';
+import HreflangTags from '@/components/HreflangTags.jsx';
+import { useBlogCategories } from '@/hooks/useBlogCategories.js';
 import pb from '@/lib/pocketbaseClient.js';
 
 const BlogPage = () => {
@@ -17,6 +19,7 @@ const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const { t, language } = useLanguage();
+  const { categories: dynamicCategories, getCategoryName } = useBlogCategories();
 
   useEffect(() => {
     fetchArticles();
@@ -60,10 +63,11 @@ const BlogPage = () => {
     setFilteredArticles(filtered);
   };
 
-  const categories = ['All', 'sandwiches', 'breads', 'sauces', 'combinations', 'techniques', 'special_ingredients'];
+  const categories = ['All', ...dynamicCategories.map(c => c.slug)];
 
   return (
     <>
+      <HreflangTags routeName="blog" />
       <Helmet>
         <title>{t('blog.title')} - {t('home.title')}</title>
         <meta name="description" content={t('blog.desc')} />
@@ -112,7 +116,7 @@ const BlogPage = () => {
                     variant={selectedCategory === cat ? 'default' : 'outline'}
                     className={selectedCategory === cat ? 'bg-secondary hover:bg-secondary/90' : ''}
                   >
-                    {cat === 'All' ? t('common.all') : t(`common.categories.${cat}`)}
+                    {cat === 'All' ? t('common.all') : getCategoryName(cat, language)}
                   </Button>
                 ))}
               </div>

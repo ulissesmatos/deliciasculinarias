@@ -70,9 +70,10 @@ const RecipeManagement = () => {
           ) : (
             <div className="space-y-3">
               {recipes.map(recipe => {
-                const imageUrl = recipe.featured_image
-                  ? pb.files.getUrl(recipe, recipe.featured_image, { thumb: '80x80' })
-                  : null;
+                const imageUrl = recipe.featured_image_url
+                  || (recipe.featured_image
+                    ? pb.files.getURL(recipe, recipe.featured_image, { thumb: '80x80' })
+                    : null);
                 return (
                   <div key={recipe.id} className="bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 p-4 hover:border-primary/30 transition-colors">
                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">

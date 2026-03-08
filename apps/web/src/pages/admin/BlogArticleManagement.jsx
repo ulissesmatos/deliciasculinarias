@@ -83,9 +83,10 @@ const BlogArticleManagement = () => {
           ) : (
             <div className="space-y-3">
               {articles.map(article => {
-                const imageUrl = article.featured_image
-                  ? pb.files.getUrl(article, article.featured_image, { thumb: '80x80' })
-                  : null;
+                const imageUrl = article.featured_image_url
+                  || (article.featured_image
+                    ? pb.files.getURL(article, article.featured_image, { thumb: '80x80' })
+                    : null);
                 return (
                   <div key={article.id} className="bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 p-4 hover:border-primary/30 transition-colors">
                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">

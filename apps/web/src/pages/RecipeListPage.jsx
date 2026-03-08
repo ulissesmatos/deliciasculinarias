@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import RecipeCard from '@/components/RecipeCard.jsx';
+import HreflangTags from '@/components/HreflangTags.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
 const PAGE_SIZE = 12;
@@ -75,6 +76,7 @@ const RecipeListPage = () => {
 
   return (
     <>
+      <HreflangTags routeName="recipes" />
       <Helmet>
         <title>{t('recipes.title')} - {t('home.title')}</title>
         <meta name="description" content={t('recipes.desc')} />

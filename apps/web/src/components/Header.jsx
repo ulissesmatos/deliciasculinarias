@@ -5,6 +5,7 @@ import { Menu, X, ChefHat, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { useAuth } from '@/hooks/useAuth.jsx';
+import { route } from '@/lib/routes.js';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,18 +20,22 @@ const Header = () => {
   const { isAuthenticated } = useAuth();
 
   const navLinks = [
-    { path: '/', label: t('nav.home') },
-    { path: '/recipes', label: t('nav.recipes') },
-    { path: '/blog', label: t('nav.blog') },
-    { path: '/about', label: t('nav.about') },
-    { path: '/contact', label: t('nav.contact') }
+    { path: route(language, 'home'), label: t('nav.home') },
+    { path: route(language, 'recipes'), label: t('nav.recipes') },
+    { path: route(language, 'blog'), label: t('nav.blog') },
+    { path: route(language, 'about'), label: t('nav.about') },
+    { path: route(language, 'contact'), label: t('nav.contact') },
   ];
 
   if (isAuthenticated) {
     navLinks.push({ path: '/admin/dashboard', label: t('nav.dashboard') });
   }
 
-  const isActive = (path) => location.pathname === path;
+  // Active when the pathname starts with the link path (handles nested routes)
+  const isActive = (path) =>
+    path === route(language, 'home')
+      ? location.pathname === path
+      : location.pathname.startsWith(path);
 
   const languages = [
     { code: 'es', name: 'Español', flag: '🇪🇸' },
@@ -42,7 +47,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-white shadow-md">
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to={route(language, 'home')} className="flex items-center gap-2 group">
             <ChefHat className="text-primary w-8 h-8 group-hover:rotate-12 transition-transform" />
             <span className="text-2xl font-bold text-gray-900">
               Delícias <span className="text-primary">Culinárias</span>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { ArrowLeft, Plus, Trash2, Save, ImageIcon, Sparkles, Globe, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, ImageIcon, Sparkles, Globe, Loader2, Images, Link2, Upload, X } from 'lucide-react';
+import MediaPickerModal from '@/components/admin/MediaPickerModal.jsx';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,9 @@ import { useAI } from '@/hooks/useAI.js';
 import { checkAIReady } from '@/lib/aiConfig.js';
 import AIGenerateModal from '@/components/admin/AIGenerateModal.jsx';
 import pb from '@/lib/pocketbaseClient.js';
+import { toSlug } from '@/lib/slugify.js';
+import { convertToWebp } from '@/lib/convertToWebp.js';
+import { useWebpConversion } from '@/hooks/useWebpConversion.js';
 
 const LANGS = [
   { code: 'pt', label: 'Português' },
@@ -25,6 +29,7 @@ const DIFFICULTIES = [
 
 const emptyForm = () => ({
   title_pt: '', title_en: '', title_es: '',
+  slug_pt: '', slug_en: '', slug_es: '',
   description_pt: '', description_en: '', description_es: '',
   ingredients_pt: [''],
   ingredients_en: [''],
@@ -49,6 +54,9 @@ const RecipeEditor = () => {
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
+  const [imageUrlOverride, setImageUrlOverride] = useState(null);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [convertWebp] = useWebpConversion();
   const [showAIModal, setShowAIModal] = useState(false);
   const fileInputRef = useRef(null);
   const { loading: aiLoading, operation: aiOperation, aiGenerateRecipe, aiTranslateRecipe } = useAI();
@@ -63,6 +71,9 @@ const RecipeEditor = () => {
           title_pt: r.title_pt || '',
           title_en: r.title_en || '',
           title_es: r.title_es || '',
+          slug_pt: r.slug_pt || '',
+          slug_en: r.slug_en || '',
+          slug_es: r.slug_es || '',
           description_pt: r.description_pt || '',
           description_en: r.description_en || '',
           description_es: r.description_es || '',
@@ -77,8 +88,11 @@ const RecipeEditor = () => {
           difficulty_level: r.difficulty_level || 'Easy',
           featured_image: null,
         });
-        if (r.featured_image) {
-          setExistingImage(pb.files.getUrl(r, r.featured_image, { thumb: '400x300' }));
+        if (r.featured_image_url) {
+          setExistingImage(r.featured_image_url);
+          setImageUrlOverride(r.featured_image_url);
+        } else if (r.featured_image) {
+          setExistingImage(pb.files.getURL(r, r.featured_image, { thumb: '400x300' }));
         }
       } catch (err) {
         toast({ title: 'Erro', description: 'Não foi possível carregar a receita.', variant: 'destructive' });
@@ -92,6 +106,20 @@ const RecipeEditor = () => {
 
   const set = (field, value) => setForm(f => ({ ...f, [field]: value }));
 
+  // Auto-generate slug when title changes (only if slug is still empty or was auto-generated)
+  const setTitle = (lang, value) => {
+    setForm(f => {
+      const prevSlug = f[`slug_${lang}`];
+      const prevTitle = f[`title_${lang}`];
+      const wasAutoSlug = prevSlug === '' || prevSlug === toSlug(prevTitle);
+      return {
+        ...f,
+        [`title_${lang}`]: value,
+        [`slug_${lang}`]: wasAutoSlug ? toSlug(value) : prevSlug,
+      };
+    });
+  };
+
   /* ---------- list helpers ---------- */
   const updateListItem = (field, index, value) =>
     setForm(f => ({ ...f, [field]: f[field].map((v, i) => (i === index ? value : v)) }));
@@ -103,11 +131,41 @@ const RecipeEditor = () => {
     setForm(f => ({ ...f, [field]: f[field].length === 1 ? [''] : f[field].filter((_, i) => i !== index) }));
 
   /* ---------- image ---------- */
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    set('featured_image', file);
-    setImagePreview(URL.createObjectURL(file));
+  const handleImageChange = async (e) => {
+    const raw = e.target.files[0];
+    if (!raw) return;
+    const file = convertWebp ? await convertToWebp(raw) : raw;
+    // Upload to media library first so it shows up in /admin/media
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'receitas');
+      const record = await pb.collection('media').create(fd, { requestKey: null });
+      const url = pb.files.getURL(record, record.file);
+      setImagePreview(url);
+      setImageUrlOverride(url);
+      set('featured_image', null);
+    } catch (err) {
+      // fallback: attach directly to the recipe
+      set('featured_image', file);
+      setImagePreview(URL.createObjectURL(file));
+      setImageUrlOverride(null);
+      toast({ title: 'Aviso', description: 'Imagem não registada na biblioteca: ' + err.message, variant: 'destructive' });
+    }
+  };
+
+  const handleMediaSelect = (url) => {
+    setImagePreview(url);
+    setImageUrlOverride(url);
+    set('featured_image', null);
+    setShowMediaPicker(false);
+  };
+
+  const handleClearImage = () => {
+    setImagePreview(null);
+    setExistingImage(null);
+    setImageUrlOverride(null);
+    set('featured_image', null);
   };
 
   /* ---------- AI handlers ---------- */
@@ -196,6 +254,9 @@ const RecipeEditor = () => {
       data.append('title_pt', form.title_pt);
       data.append('title_en', titleEn);
       data.append('title_es', titleEs);
+      data.append('slug_pt', form.slug_pt || toSlug(form.title_pt));
+      data.append('slug_en', form.slug_en || toSlug(titleEn));
+      data.append('slug_es', form.slug_es || toSlug(titleEs));
       data.append('description_pt', form.description_pt);
       data.append('description_en', form.description_en || form.description_pt);
       data.append('description_es', form.description_es || form.description_pt);
@@ -208,7 +269,13 @@ const RecipeEditor = () => {
       data.append('prep_time', form.prep_time || 0);
       data.append('servings',  form.servings  || 0);
       data.append('difficulty_level', form.difficulty_level);
-      if (form.featured_image) data.append('featured_image', form.featured_image);
+      if (form.featured_image) {
+        data.append('featured_image', form.featured_image);
+        data.append('featured_image_url', '');
+      } else if (imageUrlOverride) {
+        data.append('featured_image_url', imageUrlOverride);
+        data.append('featured_image', ''); // clear old file
+      }
 
       if (isEditing) {
         await pb.collection('recipes').update(id, data, { $autoCancel: false });
@@ -360,8 +427,32 @@ const RecipeEditor = () => {
                       className="mt-1.5"
                       placeholder={activeLang !== 'pt' ? `Deixar vazio para usar o PT` : 'Ex: Sandes de Frango Grelhado'}
                       value={form[`title_${activeLang}`]}
-                      onChange={e => set(`title_${activeLang}`, e.target.value)}
+                      onChange={e => setTitle(activeLang, e.target.value)}
                     />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-semibold text-gray-700">
+                      Slug ({activeLang.toUpperCase()})
+                      <span className="ml-1 font-normal text-gray-400 text-xs">URL personalizado</span>
+                    </Label>
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <span className="text-xs text-gray-400 whitespace-nowrap">/{activeLang}/receita/</span>
+                      <Input
+                        placeholder="gerado-automaticamente-do-titulo"
+                        value={form[`slug_${activeLang}`]}
+                        onChange={e => set(`slug_${activeLang}`, toSlug(e.target.value))}
+                        className="font-mono text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => set(`slug_${activeLang}`, toSlug(form[`title_${activeLang}`] || form.title_pt))}
+                        className="shrink-0 text-xs px-2 py-1.5 rounded border border-gray-200 hover:bg-gray-50 text-gray-500 whitespace-nowrap"
+                        title="Regenerar a partir do título"
+                      >
+                        ↺ Gerar
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -471,20 +562,27 @@ const RecipeEditor = () => {
                   <ImageIcon size={16} className="text-gray-400" />
                   Imagem Principal
                 </h2>
-                <div
-                  className="relative aspect-video rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors mb-3"
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 mb-3">
                   {(imagePreview || existingImage) ? (
-                    <img
-                      src={imagePreview || existingImage}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={imagePreview || existingImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleClearImage}
+                        className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-lg text-white hover:bg-black/80 transition-colors"
+                        title="Remover imagem"
+                      >
+                        <X size={14} />
+                      </button>
+                    </>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
                       <ImageIcon size={32} />
-                      <span className="mt-2 text-sm">Clica para escolher</span>
+                      <span className="mt-2 text-sm">Nenhuma imagem selecionada</span>
                     </div>
                   )}
                 </div>
@@ -495,18 +593,44 @@ const RecipeEditor = () => {
                   className="hidden"
                   onChange={handleImageChange}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {imagePreview || existingImage ? 'Alterar imagem' : 'Escolher imagem'}
-                </Button>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload size={13} />
+                    Upload
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={() => setShowMediaPicker(true)}
+                  >
+                    <Images size={13} />
+                    Biblioteca
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={() => {
+                      const url = window.prompt('Introduz o URL da imagem:');
+                      if (url?.trim()) handleMediaSelect(url.trim());
+                    }}
+                  >
+                    <Link2 size={13} />
+                    URL
+                  </Button>
+                </div>
               </div>
 
-              {/* Details */}
+              {/* Details */
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
                 <h2 className="font-semibold text-gray-900">Detalhes</h2>
 
@@ -574,6 +698,15 @@ const RecipeEditor = () => {
           </div>
         )}
       </div>
+
+      {/* Media Picker Modal */}
+      {showMediaPicker && (
+        <MediaPickerModal
+          onSelect={handleMediaSelect}
+          onClose={() => setShowMediaPicker(false)}
+          defaultFolder="receitas"
+        />
+      )}
 
       {/* AI Generate Modal */}
       {showAIModal && (

@@ -4,20 +4,25 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { getTranslation } from '@/lib/translations.js';
+import { route } from '@/lib/routes.js';
+import { useBlogCategories } from '@/hooks/useBlogCategories.js';
 import pb from '@/lib/pocketbaseClient.js';
 
 const BlogCard = ({ article }) => {
   const { t, language } = useLanguage();
-  const imageUrl = article.featured_image 
-    ? pb.files.getUrl(article, article.featured_image, { thumb: '300x300' })
-    : 'https://images.unsplash.com/photo-1481070555726-e2fe8357725c?w=400';
+  const { getCategoryName } = useBlogCategories();
+  const imageUrl = article.featured_image_url
+    || (article.featured_image
+      ? pb.files.getURL(article, article.featured_image, { thumb: '300x300' })
+      : 'https://images.unsplash.com/photo-1481070555726-e2fe8357725c?w=400');
 
   const title = getTranslation(article, 'title', language);
   const description = getTranslation(article, 'description', language);
+  const slug = article[`slug_${language}`] || article.slug_pt || article.id;
 
   const getCategoryLabel = (cat) => {
     if (!cat) return '';
-    return t(`common.categories.${cat}`) || cat;
+    return getCategoryName(cat, language) || cat;
   };
 
   return (
@@ -26,7 +31,7 @@ const BlogCard = ({ article }) => {
       transition={{ duration: 0.3 }}
       className="bg-white rounded-xl shadow-lg hover:shadow-2xl overflow-hidden transition-all duration-300 flex flex-col h-full"
     >
-      <Link to={`/blog/${article.id}`} className="flex flex-col h-full">
+      <Link to={route(language, 'blogArticle', { slug })} className="flex flex-col h-full">
         <div className="relative h-48 overflow-hidden flex-shrink-0">
           <img 
             src={imageUrl} 

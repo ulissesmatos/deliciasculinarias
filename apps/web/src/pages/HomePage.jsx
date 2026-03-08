@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
+import { route } from '@/lib/routes.js';
 import RecipeCard from '@/components/RecipeCard.jsx';
 import BlogCard from '@/components/BlogCard.jsx';
+import HreflangTags from '@/components/HreflangTags.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
 const HomePage = () => {
@@ -19,7 +21,7 @@ const HomePage = () => {
   const [email, setEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,6 +84,7 @@ const HomePage = () => {
 
   return (
     <>
+      <HreflangTags routeName="home" />
       <Helmet>
         <title>{t('home.title')} - {t('home.subtitle')}</title>
         <meta name="description" content={t('home.desc')} />
@@ -133,13 +136,13 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
-              <Link to="/recipes">
+              <Link to={route(language, 'recipes')}>
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 w-full sm:w-auto">
                   {t('home.cta')}
                   <ArrowRight className="ml-2" />
                 </Button>
               </Link>
-              <Link to="/blog">
+              <Link to={route(language, 'blog')}>
                 <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 text-lg px-8 py-6 w-full sm:w-auto">
                   {t('nav.blog')}
                 </Button>
@@ -189,7 +192,7 @@ const HomePage = () => {
             )}
 
             <div className="text-center mt-12">
-              <Link to="/recipes">
+              <Link to={route(language, 'recipes')}>
                 <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary hover:text-white">
                   {t('home.viewAll')}
                   <ArrowRight className="ml-2" />
@@ -240,7 +243,7 @@ const HomePage = () => {
             )}
 
             <div className="text-center mt-12">
-              <Link to="/blog">
+              <Link to={route(language, 'blog')}>
                 <Button variant="outline" size="lg" className="border-secondary text-secondary hover:bg-secondary hover:text-white">
                   {t('home.viewAllBlog')}
                   <ArrowRight className="ml-2" />

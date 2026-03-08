@@ -1,7 +1,7 @@
 {
 	"name": "pocketbase-app",
 	"type": "module",
-	"version": "0.0.0",
+	"version": "1.1.0",
 	"private": true,
 	"scripts": {
 		"dev": "pocketbase.exe serve --http=0.0.0.0:8090 --dir=./pb_data_local --migrationsDir=./pb_migrations --hooksDir=./pb_hooks --hooksWatch=false",

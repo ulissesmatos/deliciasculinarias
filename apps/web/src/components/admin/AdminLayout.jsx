@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate, Outlet } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, FileText, ShoppingBag, MessageCircle,
-  Cpu, LogOut, ChevronLeft, ChevronRight, ExternalLink, Menu, X,
+  Cpu, LogOut, ChevronLeft, ChevronRight, ChevronDown, ExternalLink, Menu, X, UserCog, Images,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth.jsx';
 
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/admin/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/admin/recipes',      icon: BookOpen,        label: 'Receitas' },
   { to: '/admin/blog',         icon: FileText,        label: 'Blog' },
+  { to: '/admin/media',        icon: Images,          label: 'Mídia' },
   { to: '/admin/products',     icon: ShoppingBag,     label: 'Produtos' },
   { to: '/admin/comments',     icon: MessageCircle,   label: 'Comentários' },
   { to: '/admin/ai-settings',  icon: Cpu,             label: 'Config. IA' },
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
 const AdminLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -43,24 +45,79 @@ const AdminLayout = () => {
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map(item => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-primary text-white shadow-md shadow-primary/25'
-                  : 'text-gray-300 hover:bg-white/10 hover:text-white'
-              } ${collapsed ? 'justify-center' : ''}`
-            }
-            title={collapsed ? item.label : undefined}
-          >
-            <item.icon size={20} className="shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
-          </NavLink>
-        ))}
+        {NAV_ITEMS.map(item => {
+          if (item.to === '/admin/blog') {
+            const onBlog = location.pathname.startsWith('/admin/blog');
+            return (
+              <div key={item.to}>
+                <NavLink
+                  to="/admin/blog"
+                  end
+                  onClick={() => setMobileOpen(false)}
+                  className={() => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    onBlog
+                      ? 'bg-primary text-white shadow-md shadow-primary/25'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  } ${collapsed ? 'justify-center' : ''}`}
+                  title={collapsed ? 'Blog' : undefined}
+                >
+                  <FileText size={20} className="shrink-0" />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1">Blog</span>
+                      <ChevronDown size={14} className={`transition-transform duration-200 ${onBlog ? 'rotate-180' : ''}`} />
+                    </>
+                  )}
+                </NavLink>
+                {onBlog && !collapsed && (
+                  <div className="mt-1 ml-7 pl-3 border-l border-gray-700/50 space-y-0.5">
+                    <NavLink
+                      to="/admin/blog"
+                      end
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) =>
+                        `block px-3 py-2 rounded-lg text-sm transition-colors ${
+                          isActive ? 'text-white font-medium bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        }`
+                      }
+                    >
+                      Artigos
+                    </NavLink>
+                    <NavLink
+                      to="/admin/blog/categories"
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) =>
+                        `block px-3 py-2 rounded-lg text-sm transition-colors ${
+                          isActive ? 'text-white font-medium bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        }`
+                      }
+                    >
+                      Categorias
+                    </NavLink>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-primary text-white shadow-md shadow-primary/25'
+                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                } ${collapsed ? 'justify-center' : ''}`
+              }
+              title={collapsed ? item.label : undefined}
+            >
+              <item.icon size={20} className="shrink-0" />
+              {!collapsed && <span>{item.label}</span>}
+            </NavLink>
+          );
+        })}
       </nav>
 
       {/* Visit site link */}
@@ -82,14 +139,22 @@ const AdminLayout = () => {
       {/* User / logout */}
       <div className="border-t border-gray-700/50 p-3 shrink-0">
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+          <Link
+            to="/admin/profile"
+            onClick={() => setMobileOpen(false)}
+            className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 hover:bg-primary/40 transition-colors"
+            title="Meu perfil"
+          >
             <span className="text-primary text-xs font-bold">
               {user?.email?.[0]?.toUpperCase() || 'A'}
             </span>
-          </div>
+          </Link>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white font-medium truncate">{user?.email || 'Admin'}</p>
+              <Link to="/admin/profile" className="text-sm text-white font-medium truncate hover:text-primary/80 transition-colors" title="Meu perfil">
+                {user?.email || 'Admin'}
+              </Link>
+              <p className="text-xs text-gray-400 leading-tight">Meu perfil</p>
             </div>
           )}
           <button

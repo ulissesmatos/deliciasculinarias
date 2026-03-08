@@ -5,16 +5,19 @@ import { Clock, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { getTranslation } from '@/lib/translations.js';
+import { route } from '@/lib/routes.js';
 import pb from '@/lib/pocketbaseClient.js';
 
 const RecipeCard = ({ recipe }) => {
   const { t, language } = useLanguage();
-  const imageUrl = recipe.featured_image 
-    ? pb.files.getUrl(recipe, recipe.featured_image, { thumb: '300x300' })
-    : 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400';
+  const imageUrl = recipe.featured_image_url
+    || (recipe.featured_image
+      ? pb.files.getURL(recipe, recipe.featured_image, { thumb: '300x300' })
+      : 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400');
 
   const title = getTranslation(recipe, 'title', language);
   const description = getTranslation(recipe, 'description', language);
+  const slug = recipe[`slug_${language}`] || recipe.slug_pt || recipe.id;
 
   const getCategoryLabel = (level) => {
     if (!level) return '';
@@ -27,7 +30,7 @@ const RecipeCard = ({ recipe }) => {
       transition={{ duration: 0.3 }}
       className="bg-white rounded-xl shadow-lg hover:shadow-2xl overflow-hidden transition-all duration-300"
     >
-      <Link to={`/recipe/${recipe.id}`}>
+      <Link to={route(language, 'recipe', { slug })}>
         <div className="relative h-48 overflow-hidden">
           <img 
             src={imageUrl} 
