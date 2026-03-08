@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# PocketBase binaries (platform-specific, download per environment)
+apps/pocketbase/pocketbase
+apps/pocketbase/pocketbase.exe
+
+# PocketBase production data (encrypted, environment-specific)
+apps/pocketbase/pb_data/*.db
+apps/pocketbase/pb_data/*.db-shm
+apps/pocketbase/pb_data/*.db-wal
+
+# PocketBase local dev data
+apps/pocketbase/pb_data_local/
+
+# Build output
+apps/web/dist/
+apps/web/.vite/
+
+# Archive
+*.tar.gz
+*.zip
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
