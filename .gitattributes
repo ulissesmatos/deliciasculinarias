@@ -1,0 +1,22 @@
+# Force LF line endings for shell scripts (must be LF in the Linux container)
+*.sh   text eol=lf
+
+# Normal text files
+*.js   text
+*.ts   text
+*.jsx  text
+*.tsx  text
+*.json text
+*.md   text
+*.yml  text
+*.yaml text
+*.conf text
+
+# Binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
