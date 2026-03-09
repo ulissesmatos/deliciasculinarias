@@ -59,7 +59,7 @@ u "/es/contacto" "$TODAY" monthly 0.5 /pt/contato  /en/contact  /es/contacto
 
 # ── Recipes ──────────────────────────────────────────────────────────────
 RJ=$(wget -qO- \
-  "${PB}/api/collections/recipes/records?fields=slug_pt%2Cslug_en%2Cslug_es%2Cupdated&filter=%28published%3Dtrue%29&perPage=500&skipTotal=1" \
+  "${PB}/api/collections/recipes/records?fields=slug_pt%2Cslug_en%2Cslug_es%2Cupdated&perPage=500&skipTotal=1" \
   2>/dev/null || echo '{"items":[]}')
 
 RC=$(printf '%s' "$RJ" | jq -r '(.items // []) | length' 2>/dev/null || echo 0)
@@ -81,7 +81,7 @@ done
 
 # ── Blog articles ─────────────────────────────────────────────────────────
 BJ=$(wget -qO- \
-  "${PB}/api/collections/blog_articles/records?fields=slug%2Cupdated&filter=%28published%3Dtrue%29&perPage=500&skipTotal=1" \
+  "${PB}/api/collections/blog_articles/records?fields=slug_pt%2Cslug_en%2Cslug_es%2Cupdated&perPage=500&skipTotal=1" \
   2>/dev/null || echo '{"items":[]}')
 
 BC=$(printf '%s' "$BJ" | jq -r '(.items // []) | length' 2>/dev/null || echo 0)
@@ -89,14 +89,16 @@ echo "[sitemap] Artigos encontrados: $BC"
 
 printf '%s' "$BJ" | \
   jq -r '(.items // [])[] | [
-    (.slug // ""),
+    (.slug_pt // ""),
+    (.slug_en // .slug_pt // ""),
+    (.slug_es // .slug_pt // ""),
     (.updated // "" | .[0:10])
   ] | @tsv' 2>/dev/null | \
-while IFS=$(printf '\t') read -r slug lm; do
-  [ -z "$slug" ] && continue
-  u "/pt/blog/$slug" "$lm" monthly 0.6 "/pt/blog/$slug" "/en/blog/$slug" "/es/blog/$slug"
-  u "/en/blog/$slug" "$lm" monthly 0.6 "/pt/blog/$slug" "/en/blog/$slug" "/es/blog/$slug"
-  u "/es/blog/$slug" "$lm" monthly 0.6 "/pt/blog/$slug" "/en/blog/$slug" "/es/blog/$slug"
+while IFS=$(printf '\t') read -r spt sen ses lm; do
+  [ -z "$spt" ] && continue
+  u "/pt/blog/$spt" "$lm" monthly 0.6 "/pt/blog/$spt" "/en/blog/$sen" "/es/blog/$ses"
+  u "/en/blog/$sen" "$lm" monthly 0.6 "/pt/blog/$spt" "/en/blog/$sen" "/es/blog/$ses"
+  u "/es/blog/$ses" "$lm" monthly 0.6 "/pt/blog/$spt" "/en/blog/$sen" "/es/blog/$ses"
 done
 
 # ── Close XML ─────────────────────────────────────────────────────────────
