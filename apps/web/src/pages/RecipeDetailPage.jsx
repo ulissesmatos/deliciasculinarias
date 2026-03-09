@@ -200,7 +200,7 @@ const RecipeDetailPage = () => {
                 )}
                 {recipe.difficulty_level && (
                   <span className="px-4 py-2 rounded-full font-semibold bg-primary/90 text-white">
-                    {t(`common.categories.${recipe.difficulty_level}`) || recipe.difficulty_level}
+                    {t(`common.${recipe.difficulty_level.toLowerCase()}`) || recipe.difficulty_level}
                   </span>
                 )}
               </div>

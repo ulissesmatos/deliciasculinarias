@@ -21,7 +21,7 @@ const RecipeCard = ({ recipe }) => {
 
   const getCategoryLabel = (level) => {
     if (!level) return '';
-    return t(`common.categories.${level}`) || level;
+    return t(`common.${level.toLowerCase()}`) || level;
   };
 
   return (
