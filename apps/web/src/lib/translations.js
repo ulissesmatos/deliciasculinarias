@@ -37,6 +37,9 @@ export const translations = {
       readArticle: 'Read Article',
       min: 'min',
       servings: 'servings',
+      easy: 'Easy',
+      medium: 'Medium',
+      hard: 'Hard',
       categories: {
         sandwiches: 'Sandwiches',
         breads: 'Breads',
@@ -237,6 +240,9 @@ export const translations = {
       readArticle: 'Leer Artículo',
       min: 'min',
       servings: 'porciones',
+      easy: 'Fácil',
+      medium: 'Medio',
+      hard: 'Difícil',
       categories: {
         sandwiches: 'Sándwiches',
         breads: 'Panes',
@@ -437,6 +443,9 @@ export const translations = {
       readArticle: 'Ler Artigo',
       min: 'min',
       servings: 'porções',
+      easy: 'Fácil',
+      medium: 'Médio',
+      hard: 'Difícil',
       categories: {
         sandwiches: 'Sanduíches',
         breads: 'Pães',
