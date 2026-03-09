@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Home -->
+  <url>
+    <loc>https://deliciasculinarias.shop/pt</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/en</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/es</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt"/>
+  </url>
+
+  <!-- Recipes list -->
+  <url>
+    <loc>https://deliciasculinarias.shop/pt/receitas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/receitas"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/recipes"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/recetas"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/receitas"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/en/recipes</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/receitas"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/recipes"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/recetas"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/receitas"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/es/recetas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/receitas"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/recipes"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/recetas"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/receitas"/>
+  </url>
+
+  <!-- Blog list -->
+  <url>
+    <loc>https://deliciasculinarias.shop/pt/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/blog"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/blog"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/en/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/blog"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/blog"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/es/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/blog"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/blog"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/blog"/>
+  </url>
+
+  <!-- About -->
+  <url>
+    <loc>https://deliciasculinarias.shop/pt/sobre</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/sobre"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/about"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/nosotros"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/sobre"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/en/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/sobre"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/about"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/nosotros"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/sobre"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/es/nosotros</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/sobre"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/about"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/nosotros"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/sobre"/>
+  </url>
+
+  <!-- Contact -->
+  <url>
+    <loc>https://deliciasculinarias.shop/pt/contato</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/contato"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/contact"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/contacto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/contato"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/en/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/contato"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/contact"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/contacto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/contato"/>
+  </url>
+  <url>
+    <loc>https://deliciasculinarias.shop/es/contacto</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt"        href="https://deliciasculinarias.shop/pt/contato"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://deliciasculinarias.shop/en/contact"/>
+    <xhtml:link rel="alternate" hreflang="es"        href="https://deliciasculinarias.shop/es/contacto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://deliciasculinarias.shop/pt/contato"/>
+  </url>
+
+</urlset>

@@ -24,8 +24,8 @@ FROM nginx:1-alpine
 
 ARG PB_VERSION=0.36.1
 
-# Add supervisord, wget, unzip (all small on Alpine)
-RUN apk add --no-cache supervisor wget unzip ca-certificates
+# Add supervisord, wget, unzip, jq (all small on Alpine)
+RUN apk add --no-cache supervisor wget unzip ca-certificates jq
 
 # ── Download the correct PocketBase binary for this machine's arch ──────────
 # Coolify builds natively on the VPS (ARM64), so uname -m returns aarch64.
@@ -55,8 +55,10 @@ COPY apps/pocketbase/pb_hooks/      /app/pocketbase/pb_hooks/
 COPY --from=web-builder /app/dist/apps/web /usr/share/nginx/html
 
 # ── Copy runtime configs ─────────────────────────────────────────────────────
-COPY deploy/nginx.conf       /etc/nginx/nginx.conf
-COPY deploy/supervisord.conf /etc/supervisord.conf
+COPY deploy/nginx.conf            /etc/nginx/nginx.conf
+COPY deploy/supervisord.conf      /etc/supervisord.conf
+COPY deploy/generate-sitemap.sh   /usr/local/bin/generate-sitemap.sh
+RUN  chmod +x /usr/local/bin/generate-sitemap.sh
 
 # ── Persistent data volume (PocketBase stores db + uploads here) ─────────────
 RUN mkdir -p /data
