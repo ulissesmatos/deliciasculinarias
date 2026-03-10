@@ -425,7 +425,7 @@ const RecipeEditor = () => {
                     </Label>
                     <Input
                       className="mt-1.5"
-                      placeholder={activeLang !== 'pt' ? `Deixar vazio para usar o PT` : 'Ex: Sandes de Frango Grelhado'}
+                      placeholder={activeLang !== 'pt' ? `Deixar vazio para usar o PT` : 'Ex: Sanduíche de Frango Grelhado'}
                       value={form[`title_${activeLang}`]}
                       onChange={e => setTitle(activeLang, e.target.value)}
                     />

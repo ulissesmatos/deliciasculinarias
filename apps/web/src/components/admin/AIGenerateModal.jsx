@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
-import { Sparkles, Loader2, X, Lightbulb } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Sparkles, Loader2, X, Lightbulb, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { checkAIReady } from '@/lib/aiConfig.js';
+import { generateSuggestions } from '@/lib/aiService.js';
 
 const RECIPE_SUGGESTIONS = [
-  'Sandes de frango grelhado com molho de mostarda e mel',
+  'Sanduíche de frango grelhado com molho de mostarda e mel',
   'Pão caseiro de alho com ervas finas e queijo parmesão',
   'Molho barbecue defumado com chipotle e melaço',
-  'Sandes vegetariana de beringela grelhada com húmus',
+  'Sanduíche vegetariano de berinjela grelhada com homus',
   'Pão brioche artesanal com manteiga e açafrão',
   'Molho de tomate italiano clássico com manjericão fresco',
 ];
 
 const BLOG_SUGGESTIONS = [
-  'As 10 melhores combinações de pão e queijo para sandes gourmet',
+  'As 10 melhores combinações de pão e queijo para sanduíches gourmet',
   'Guia completo de técnicas de fermentação para pães artesanais',
-  'História da sandes: desde o Conde de Sandwich até hoje',
-  'Como fazer molhos caseiros que elevam qualquer sandes',
-  '5 tendências gastronômicas de sandes para experimentar em casa',
-  'Ingredientes especiais que todo amante de sandes deveria conhecer',
+  'História do sanduíche: desde o Conde de Sandwich até hoje',
+  'Como fazer molhos caseiros que elevam qualquer sanduíche',
+  '5 tendências gastronômicas de sanduíches para experimentar em casa',
+  'Ingredientes especiais que todo amante de sanduíches deveria conhecer',
 ];
 
 /**
@@ -27,7 +29,28 @@ const BLOG_SUGGESTIONS = [
  */
 const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onClose }) => {
   const [prompt, setPrompt] = useState('');
-  const suggestions = type === 'recipe' ? RECIPE_SUGGESTIONS : BLOG_SUGGESTIONS;
+  const fallback = type === 'recipe' ? RECIPE_SUGGESTIONS : BLOG_SUGGESTIONS;
+  const [suggestions, setSuggestions] = useState(fallback);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const aiReady = checkAIReady().configured;
+
+  const refreshSuggestions = useCallback(async () => {
+    if (!aiReady || loadingSuggestions) return;
+    setLoadingSuggestions(true);
+    try {
+      const result = await generateSuggestions(type);
+      if (Array.isArray(result) && result.length > 0) setSuggestions(result);
+    } catch {
+      // keep current suggestions on error
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }, [type, aiReady, loadingSuggestions]);
+
+  // Auto-generate AI suggestions on first open if API is configured
+  useEffect(() => {
+    if (aiReady) refreshSuggestions();
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -86,7 +109,7 @@ const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onCl
               className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none disabled:opacity-60"
               placeholder={
                 type === 'recipe'
-                  ? 'Ex: Uma sandes de frango grelhado com molho de mostarda e mel, com alface crocante e tomate...'
+                  ? 'Ex: Um sanduíche de frango grelhado com molho de mostarda e mel, com alface crocante e tomate...'
                   : 'Ex: Um artigo sobre as melhores técnicas de fermentação para pães artesanais...'
               }
               autoFocus
@@ -98,6 +121,17 @@ const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onCl
             <div className="flex items-center gap-1.5 mb-2">
               <Lightbulb size={14} className="text-amber-500" />
               <span className="text-xs font-medium text-gray-500">Sugestões rápidas:</span>
+              {aiReady && (
+                <button
+                  type="button"
+                  disabled={loading || loadingSuggestions}
+                  onClick={refreshSuggestions}
+                  className="ml-auto flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw size={12} className={loadingSuggestions ? 'animate-spin' : ''} />
+                  {loadingSuggestions ? 'Gerando...' : 'Novas sugestões'}
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((s, i) => (

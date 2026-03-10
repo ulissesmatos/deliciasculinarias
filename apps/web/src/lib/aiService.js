@@ -154,7 +154,7 @@ Generate a complete recipe in ${langName} based on the user's request.
 IMPORTANT: Respond ONLY with a valid JSON object, no additional text. Use this exact structure:
 {
   "title": "Recipe title in ${langName}",
-  "description": "Brief appetizing description (2-3 sentences) in ${langName}",
+  "description": "Detailed, appetizing description (4-6 sentences, 80-150 words) in ${langName} — include the dish origin or inspiration, main flavors and textures, ideal occasion or pairing, and what makes it special. This will be used as the page description for SEO.",
   "ingredients": ["ingredient 1 with quantity", "ingredient 2 with quantity", ...],
   "instructions": ["Step 1 detailed instruction", "Step 2 detailed instruction", ...],
   "prep_time": 30,
@@ -169,7 +169,8 @@ Rules:
 - ingredients should include quantities (e.g., "200g de frango grelhado")
 - instructions should be detailed, clear steps
 - Generate 5-15 ingredients and 4-10 instruction steps
-- Make it delicious and practical`
+- Make it delicious and practical
+- The description field is critical for SEO and Generative Engine Optimization (GEO): write it as a rich, standalone paragraph that search engines and AI assistants can surface as an answer. Naturally include relevant keywords, the cuisine style, key ingredients, and preparation highlights.`
     },
     {
       role: 'user',
@@ -350,4 +351,38 @@ export async function testConnection(provider, apiKey, model) {
   } catch (err) {
     return { ok: false, message: `Erro de rede: ${err.message}` };
   }
+}
+
+/**
+ * Generate fresh content suggestions using the LLM.
+ * @param {'recipe' | 'blog'} type
+ * @returns {Promise<string[]>} Array of 6 suggestion strings
+ */
+export async function generateSuggestions(type = 'recipe') {
+  const isRecipe = type === 'recipe';
+
+  const messages = [
+    {
+      role: 'system',
+      content: `You generate creative content ideas for "Delícias Culinárias", a Brazilian Portuguese culinary website about sandwiches, breads, sauces, and related recipes.
+
+Respond ONLY with a valid JSON array of exactly 6 short suggestion strings in Brazilian Portuguese (pt-BR). Each suggestion should be 6-15 words.
+
+${isRecipe
+  ? 'Generate 6 creative, varied recipe ideas. Mix sandwich recipes, bread recipes, and sauce recipes. Example format: ["Sanduíche de costela desfiada com molho barbecue e coleslaw", ...]'
+  : 'Generate 6 creative, varied blog article topic ideas about sandwiches, breads, sauces, or culinary techniques. Example format: ["Os segredos dos melhores sanduíches de rua do mundo", ...]'}
+
+Be creative, trendy, and avoid repeating topics. Use Brazilian Portuguese (sanduíche, not sandes).`
+    },
+    { role: 'user', content: `Gere 6 sugestões ${isRecipe ? 'de receitas' : 'de artigos para o blog'} criativas e variadas.` },
+  ];
+
+  const raw = await chatCompletion(messages, { temperature: 1.0 });
+  const parsed = parseJSONResponse(raw);
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('Formato inválido');
+  }
+
+  return parsed.slice(0, 6);
 }

@@ -16,7 +16,7 @@ const LANGS = [
 const emptyNames = () => ({ pt: '', en: '', es: '' });
 
 const DEFAULT_CATEGORIES = [
-  { name_pt: 'Sandes',                 name_en: 'Sandwiches',          name_es: 'Sándwiches',              slug: 'sandwiches' },
+  { name_pt: 'Sanduíches',              name_en: 'Sandwiches',          name_es: 'Sándwiches',              slug: 'sandwiches' },
   { name_pt: 'Pães',                   name_en: 'Breads',              name_es: 'Panes',                   slug: 'breads' },
   { name_pt: 'Molhos',                 name_en: 'Sauces',              name_es: 'Salsas',                  slug: 'sauces' },
   { name_pt: 'Combinações',            name_en: 'Combinations',        name_es: 'Combinaciones',           slug: 'combinations' },

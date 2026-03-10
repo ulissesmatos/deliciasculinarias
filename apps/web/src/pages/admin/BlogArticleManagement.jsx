@@ -9,7 +9,7 @@ import { useLanguage } from '@/hooks/useLanguage.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
 const CATEGORY_LABELS = {
-  sandwiches: 'Sandes', breads: 'Pães', sauces: 'Molhos',
+  sandwiches: 'Sanduíches', breads: 'Pães', sauces: 'Molhos',
   combinations: 'Combinações', techniques: 'Técnicas', special_ingredients: 'Ingredientes Especiais',
 };
 
