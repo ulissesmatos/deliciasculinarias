@@ -156,6 +156,26 @@ const RecipeDetailPage = () => {
 
   const recipeId = recipe?.id || slug;
 
+  // Schema.org Recipe structured data for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Recipe',
+    name: title,
+    description: description || '',
+    image: imageUrl,
+    author: { '@type': 'Organization', name: 'Delícias Culinárias' },
+    datePublished: recipe.created,
+    prepTime: recipe.prep_time ? `PT${recipe.prep_time}M` : undefined,
+    recipeYield: recipe.servings ? `${recipe.servings}` : undefined,
+    recipeCategory: 'Sandwich',
+    recipeIngredient: ingredients,
+    recipeInstructions: instructions.map((step, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      text: typeof step === 'string' ? step : step.step || step.text,
+    })),
+  };
+
   return (
     <>
       <HreflangTags routeName="recipe" params={{ id: recipeId }} />
@@ -166,6 +186,7 @@ const RecipeDetailPage = () => {
         <meta property="og:description" content={description || ''} />
         <meta property="og:image" content={imageUrl} />
         <meta property="og:type" content="article" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       <main className="min-h-screen bg-cream">

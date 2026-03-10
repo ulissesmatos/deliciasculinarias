@@ -117,6 +117,22 @@ const BlogDetailPage = () => {
 
   const articleId = article?.id || slug;
 
+  // Schema.org Article structured data for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description: description || '',
+    image: imageUrl,
+    author: { '@type': 'Organization', name: 'Delícias Culinárias' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Delícias Culinárias',
+    },
+    datePublished: article.created,
+    dateModified: article.updated || article.created,
+  };
+
   return (
     <>
       <HreflangTags routeName="blogArticle" params={{ id: articleId }} />
@@ -127,6 +143,7 @@ const BlogDetailPage = () => {
         <meta property="og:description" content={description || ''} />
         <meta property="og:image" content={imageUrl} />
         <meta property="og:type" content="article" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       <main className="min-h-screen bg-cream pb-16">

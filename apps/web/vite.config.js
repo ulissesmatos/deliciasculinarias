@@ -213,38 +213,43 @@ if (window.navigation && window.self !== window.top) {
 const addTransformIndexHtml = {
 	name: 'add-transform-index-html',
 	transformIndexHtml(html) {
-		const tags = [
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configHorizonsRuntimeErrorHandler,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configHorizonsViteErrorHandler,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: {type: 'module'},
-				children: configHorizonsConsoleErrorHandler,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configWindowFetchMonkeyPatch,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configNavigationHandler,
-				injectTo: 'head',
-			},
-		];
+		const tags = [];
+
+		// Dev-only: error handlers & fetch monkey-patch for Horizons editor
+		if (isDev) {
+			tags.push(
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configHorizonsRuntimeErrorHandler,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configHorizonsViteErrorHandler,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: {type: 'module'},
+					children: configHorizonsConsoleErrorHandler,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configWindowFetchMonkeyPatch,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configNavigationHandler,
+					injectTo: 'head',
+				},
+			);
+		}
 
 		if (!isDev && process.env.TEMPLATE_BANNER_SCRIPT_URL && process.env.TEMPLATE_REDIRECT_URL) {
 			tags.push(
