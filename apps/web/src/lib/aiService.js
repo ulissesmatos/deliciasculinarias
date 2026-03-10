@@ -248,7 +248,8 @@ IMPORTANT: Respond ONLY with a valid JSON object:
 }
 
 Rules for content:
-- Use Markdown: # for main title, ## for sections, **bold**, *italic*, - for lists
+- Do NOT include the article title (# heading) in the content — the title is already placed separately. Start directly with the introduction paragraph.
+- Use Markdown: ## for sections, **bold**, *italic*, - for lists
 - Write 400-800 words
 - Include an engaging introduction, 2-4 sections, and a conclusion
 - Be informative, appetizing, and SEO-friendly
