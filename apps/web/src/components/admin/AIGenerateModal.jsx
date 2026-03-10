@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Sparkles, Loader2, X, Lightbulb, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { checkAIReady } from '@/lib/aiConfig.js';
 import { generateSuggestions } from '@/lib/aiService.js';
+
+const STORAGE_KEY_RECIPE = 'dc_suggestions_recipe';
+const STORAGE_KEY_BLOG   = 'dc_suggestions_blog';
 
 const RECIPE_SUGGESTIONS = [
   'Sanduíche de frango grelhado com molho de mostarda e mel',
@@ -22,6 +25,19 @@ const BLOG_SUGGESTIONS = [
   'Ingredientes especiais que todo amante de sanduíches deveria conhecer',
 ];
 
+/** Load saved suggestions from localStorage, or return the hardcoded fallback. */
+function loadSaved(type) {
+  const key = type === 'recipe' ? STORAGE_KEY_RECIPE : STORAGE_KEY_BLOG;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch { /* ignore */ }
+  return type === 'recipe' ? RECIPE_SUGGESTIONS : BLOG_SUGGESTIONS;
+}
+
 /**
  * Modal overlay for generating content with AI.
  *
@@ -29,8 +45,7 @@ const BLOG_SUGGESTIONS = [
  */
 const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onClose }) => {
   const [prompt, setPrompt] = useState('');
-  const fallback = type === 'recipe' ? RECIPE_SUGGESTIONS : BLOG_SUGGESTIONS;
-  const [suggestions, setSuggestions] = useState(fallback);
+  const [suggestions, setSuggestions] = useState(() => loadSaved(type));
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const aiReady = checkAIReady().configured;
 
@@ -39,18 +54,17 @@ const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onCl
     setLoadingSuggestions(true);
     try {
       const result = await generateSuggestions(type);
-      if (Array.isArray(result) && result.length > 0) setSuggestions(result);
+      if (Array.isArray(result) && result.length > 0) {
+        setSuggestions(result);
+        const key = type === 'recipe' ? STORAGE_KEY_RECIPE : STORAGE_KEY_BLOG;
+        localStorage.setItem(key, JSON.stringify(result));
+      }
     } catch {
       // keep current suggestions on error
     } finally {
       setLoadingSuggestions(false);
     }
   }, [type, aiReady, loadingSuggestions]);
-
-  // Auto-generate AI suggestions on first open if API is configured
-  useEffect(() => {
-    if (aiReady) refreshSuggestions();
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (e) => {
     e.preventDefault();
