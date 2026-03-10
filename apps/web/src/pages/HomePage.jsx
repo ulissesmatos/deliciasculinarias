@@ -107,7 +107,7 @@ const HomePage = () => {
             sizes="100vw"
             alt=""
             role="presentation"
-            fetchPriority="high"
+            fetchpriority="high"
             loading="eager"
             decoding="async"
             className="absolute inset-0 w-full h-full object-cover"
