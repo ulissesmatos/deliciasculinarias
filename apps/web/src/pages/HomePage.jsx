@@ -92,6 +92,19 @@ const HomePage = () => {
         <meta property="og:description" content={t('home.desc')} />
         <meta property="og:image" content="https://images.unsplash.com/photo-1528735602780-2552fd46c7af" />
         <meta property="og:type" content="website" />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          'name': 'Delícias Culinárias',
+          'url': 'https://deliciasculinarias.shop',
+          'description': t('home.desc'),
+          'inLanguage': language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es',
+          'publisher': {
+            '@type': 'Organization',
+            'name': 'Delícias Culinárias',
+            'url': 'https://deliciasculinarias.shop'
+          }
+        })}</script>
       </Helmet>
 
       <main>

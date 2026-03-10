@@ -34,6 +34,11 @@ export const LanguageProvider = ({ children }) => {
     }
   }, [location.pathname]);
 
+  // Keep <html lang> in sync with the active language
+  useEffect(() => {
+    document.documentElement.lang = language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : language;
+  }, [language]);
+
   // Switch language: navigate to the equivalent page in the new language
   const setLanguage = useCallback(
     (newLang) => {
