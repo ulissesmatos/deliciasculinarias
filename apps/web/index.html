@@ -6,6 +6,20 @@
 		<meta name="generator" content="Delícias Culinárias" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Delícias Culinárias</title>
+		<!-- Preconnect: establish early connection to image CDN -->
+		<link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+		<!-- Preload LCP hero image before React runs, eliminating the 2.4 s resource-load delay -->
+		<link
+			rel="preload"
+			as="image"
+			imagesrcset="
+				https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=828&q=75&auto=format&fit=crop 828w,
+				https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1280&q=75&auto=format&fit=crop 1280w,
+				https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1920&q=75&auto=format&fit=crop 1920w
+			"
+			imagesizes="100vw"
+			fetchpriority="high"
+		/>
 	</head>
 	<body>
 		<div id="root"></div>

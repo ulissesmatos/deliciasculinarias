@@ -8,12 +8,25 @@ import { getTranslation } from '@/lib/translations.js';
 import { route } from '@/lib/routes.js';
 import pb from '@/lib/pocketbaseClient.js';
 
+// Append thumb params to PocketBase file URLs; add size params to bare Unsplash URLs
+const optimizeImageUrl = (url, pbThumb = '640x0') => {
+  if (!url) return null;
+  if (url.includes('/api/files/')) {
+    return url.includes('?') ? `${url}&thumb=${pbThumb}` : `${url}?thumb=${pbThumb}`;
+  }
+  if (url.includes('unsplash.com') && !url.includes('w=')) {
+    return `${url}?w=640&q=75&auto=format&fit=crop`;
+  }
+  return url;
+};
+
 const RecipeCard = ({ recipe }) => {
   const { t, language } = useLanguage();
   const imageUrl = recipe.featured_image_url
-    || (recipe.featured_image
-      ? pb.files.getURL(recipe, recipe.featured_image, { thumb: '300x300' })
-      : 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400');
+    ? optimizeImageUrl(recipe.featured_image_url)
+    : (recipe.featured_image
+      ? pb.files.getURL(recipe, recipe.featured_image, { thumb: '640x0' })
+      : 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=640&q=75&auto=format&fit=crop');
 
   const title = getTranslation(recipe, 'title', language);
   const description = getTranslation(recipe, 'description', language);
@@ -32,9 +45,11 @@ const RecipeCard = ({ recipe }) => {
     >
       <Link to={route(language, 'recipe', { slug })}>
         <div className="relative h-48 overflow-hidden">
-          <img 
-            src={imageUrl} 
+          <img
+            src={imageUrl}
             alt={title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
           />
           {recipe.difficulty_level && (

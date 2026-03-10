@@ -96,14 +96,23 @@ const HomePage = () => {
 
       <main>
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ 
-              backgroundImage: 'url(https://images.unsplash.com/photo-1528735602780-2552fd46c7af)',
-            }}
-          >
-            <div className="absolute inset-0 bg-black/60"></div>
-          </div>
+          {/* img instead of CSS background-image: browser can preload it and it counts as LCP element */}
+          <img
+            src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1280&q=75&auto=format&fit=crop"
+            srcSet="
+              https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=828&q=75&auto=format&fit=crop 828w,
+              https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1280&q=75&auto=format&fit=crop 1280w,
+              https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1920&q=75&auto=format&fit=crop 1920w
+            "
+            sizes="100vw"
+            alt=""
+            role="presentation"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/60"></div>
 
           <div className="relative z-10 container mx-auto px-4 text-center text-white">
             <motion.h1

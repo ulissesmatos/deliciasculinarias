@@ -8,13 +8,26 @@ import { route } from '@/lib/routes.js';
 import { useBlogCategories } from '@/hooks/useBlogCategories.js';
 import pb from '@/lib/pocketbaseClient.js';
 
+// Append thumb params to PocketBase file URLs; add size params to bare Unsplash URLs
+const optimizeImageUrl = (url, pbThumb = '640x0') => {
+  if (!url) return null;
+  if (url.includes('/api/files/')) {
+    return url.includes('?') ? `${url}&thumb=${pbThumb}` : `${url}?thumb=${pbThumb}`;
+  }
+  if (url.includes('unsplash.com') && !url.includes('w=')) {
+    return `${url}?w=640&q=75&auto=format&fit=crop`;
+  }
+  return url;
+};
+
 const BlogCard = ({ article }) => {
   const { t, language } = useLanguage();
   const { getCategoryName } = useBlogCategories();
   const imageUrl = article.featured_image_url
-    || (article.featured_image
-      ? pb.files.getURL(article, article.featured_image, { thumb: '300x300' })
-      : 'https://images.unsplash.com/photo-1481070555726-e2fe8357725c?w=400');
+    ? optimizeImageUrl(article.featured_image_url)
+    : (article.featured_image
+      ? pb.files.getURL(article, article.featured_image, { thumb: '640x0' })
+      : 'https://images.unsplash.com/photo-1481070555726-e2fe8357725c?w=640&q=75&auto=format&fit=crop');
 
   const title = getTranslation(article, 'title', language);
   const description = getTranslation(article, 'description', language);
@@ -33,9 +46,11 @@ const BlogCard = ({ article }) => {
     >
       <Link to={route(language, 'blogArticle', { slug })} className="flex flex-col h-full">
         <div className="relative h-48 overflow-hidden flex-shrink-0">
-          <img 
-            src={imageUrl} 
+          <img
+            src={imageUrl}
             alt={title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
           />
           {article.category && (

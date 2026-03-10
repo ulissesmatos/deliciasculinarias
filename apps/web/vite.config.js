@@ -327,7 +327,34 @@ export default defineConfig({
 				'@babel/traverse',
 				'@babel/generator',
 				'@babel/types'
-			]
+			],
+			output: {
+				// Split heavy vendor libraries into separate cacheable chunks
+				manualChunks(id) {
+					if (
+						id.includes('node_modules/react/') ||
+						id.includes('node_modules/react-dom/') ||
+						id.includes('node_modules/scheduler/')
+					) {
+						return 'vendor-react';
+					}
+					if (
+						id.includes('node_modules/react-router') ||
+						id.includes('node_modules/@remix-run/')
+					) {
+						return 'vendor-router';
+					}
+					if (id.includes('node_modules/framer-motion/')) {
+						return 'vendor-motion';
+					}
+					if (id.includes('node_modules/pocketbase/')) {
+						return 'vendor-pocketbase';
+					}
+					if (id.includes('node_modules/react-helmet')) {
+						return 'vendor-helmet';
+					}
+				}
+			}
 		}
 	}
 });
