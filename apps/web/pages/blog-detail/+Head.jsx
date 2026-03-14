@@ -29,8 +29,8 @@ export default function Head() {
     image: imageUrl,
     author: { '@type': 'Organization', name: 'Delícias Culinárias' },
     publisher: { '@type': 'Organization', name: 'Delícias Culinárias' },
-    datePublished: article.created,
-    dateModified: article.updated || article.created,
+    datePublished: new Date(article.created).toISOString(),
+    dateModified: new Date(article.updated || article.created).toISOString(),
   };
 
   return (
@@ -42,7 +42,10 @@ export default function Head() {
       <meta property="og:image" content={imageUrl} />
       <meta property="og:type" content="article" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <HreflangTags routeName="blogArticle" params={{ id: article.id }} />
+      <HreflangTags
+        routeName="blogArticle"
+        getParams={(lang) => ({ slug: article[`slug_${lang}`] || article.slug_pt })}
+      />
     </>
   );
 }

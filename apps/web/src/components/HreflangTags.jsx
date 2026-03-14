@@ -17,7 +17,8 @@ const ORIGIN = 'https://deliciasculinarias.shop';
  * Renders hreflang <link> tags.
  * Works both inside Vike +Head.jsx (renders into <head>) and standalone.
  */
-const HreflangTags = ({ routeName, params = {} }) => {
+const HreflangTags = ({ routeName, params = {}, getParams }) => {
+  const resolveParams = (lang) => getParams ? getParams(lang) : params;
   return (
     <>
       {SUPPORTED_LANGS.map((lang) => (
@@ -25,13 +26,13 @@ const HreflangTags = ({ routeName, params = {} }) => {
           key={lang}
           rel="alternate"
           hrefLang={LOCALE_MAP[lang]}
-          href={`${ORIGIN}${route(lang, routeName, params)}`}
+          href={`${ORIGIN}${route(lang, routeName, resolveParams(lang))}`}
         />
       ))}
       <link
         rel="alternate"
         hrefLang="x-default"
-        href={`${ORIGIN}${route(DEFAULT_LANG, routeName, params)}`}
+        href={`${ORIGIN}${route(DEFAULT_LANG, routeName, resolveParams(DEFAULT_LANG))}`}
       />
     </>
   );

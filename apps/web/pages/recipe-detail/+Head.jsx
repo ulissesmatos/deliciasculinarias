@@ -31,16 +31,16 @@ export default function Head() {
     description: description || '',
     image: imageUrl,
     author: { '@type': 'Organization', name: 'Delícias Culinárias' },
-    datePublished: recipe.created,
+    datePublished: new Date(recipe.created).toISOString(),
     prepTime: recipe.prep_time ? `PT${recipe.prep_time}M` : undefined,
     recipeYield: recipe.servings ? `${recipe.servings}` : undefined,
     recipeCategory: 'Sandwich',
     recipeIngredient: ingredients,
-    recipeInstructions: instructions.map((step, i) => ({
-      '@type': 'HowToStep',
-      position: i + 1,
-      text: typeof step === 'string' ? step : step.step || step.text,
-    })),
+    recipeInstructions: instructions.map((step, i) => {
+      const text = typeof step === 'string' ? step : step.step || step.text || '';
+      const name = text.split(/[.:,;]/)[0].trim().slice(0, 60);
+      return { '@type': 'HowToStep', position: i + 1, name, text };
+    }),
   };
 
   return (
@@ -52,7 +52,10 @@ export default function Head() {
       <meta property="og:image" content={imageUrl} />
       <meta property="og:type" content="article" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <HreflangTags routeName="recipe" params={{ id: recipe.id }} />
+      <HreflangTags
+        routeName="recipe"
+        getParams={(lang) => ({ slug: recipe[`slug_${lang}`] || recipe.slug_pt })}
+      />
     </>
   );
 }
