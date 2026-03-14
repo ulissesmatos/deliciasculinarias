@@ -47,6 +47,7 @@ const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onCl
   const [prompt, setPrompt] = useState('');
   const [suggestions, setSuggestions] = useState(() => loadSaved(type));
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [generateImages, setGenerateImages] = useState(false);
   const aiReady = checkAIReady().configured;
 
   const refreshSuggestions = useCallback(async () => {
@@ -69,7 +70,7 @@ const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onCl
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!prompt.trim()) return;
-    onGenerate(prompt.trim());
+    onGenerate(prompt.trim(), generateImages);
   };
 
   return (
@@ -161,7 +162,23 @@ const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onCl
               ))}
             </div>
           </div>
-
+          {/* Image generation toggle — blog articles only */}
+          {type === 'blog' && (
+            <button
+              type="button"
+              onClick={() => setGenerateImages(g => !g)}
+              disabled={loading}
+              className="flex items-center gap-3 w-full p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50 text-left"
+            >
+              <div className={`relative shrink-0 w-10 h-6 rounded-full transition-colors ${generateImages ? 'bg-primary' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${generateImages ? 'translate-x-4' : 'translate-x-0'}`} />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-700">Gerar imagens para o artigo</div>
+                <div className="text-xs text-gray-400">A IA insere 2–3 imagens geradas ao longo do texto</div>
+              </div>
+            </button>
+          )}
           {/* Action */}
           <div className="pt-2">
             <Button
@@ -177,7 +194,7 @@ const AIGenerateModal = ({ type = 'recipe', onGenerate, loading, operation, onCl
               ) : (
                 <>
                   <Sparkles size={18} />
-                  {type === 'recipe' ? 'Gerar Receita' : 'Gerar Artigo'}
+                  {type === 'recipe' ? 'Gerar Receita' : generateImages ? 'Gerar Artigo + Imagens' : 'Gerar Artigo'}
                 </>
               )}
             </Button>

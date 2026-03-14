@@ -17,6 +17,23 @@ import { toSlug } from '@/lib/slugify.js';
 import { convertToWebp } from '@/lib/convertToWebp.js';
 import { useWebpConversion } from '@/hooks/useWebpConversion.js';
 
+function insertImageIntoHtml(html, url, afterH2Text) {
+  const img = `<img src="${url}" alt="" />`;
+  if (afterH2Text) {
+    const idx = html.toLowerCase().indexOf(afterH2Text.toLowerCase());
+    if (idx !== -1) {
+      const closeH2 = html.indexOf('</h2>', idx);
+      if (closeH2 !== -1) {
+        const at = closeH2 + 5;
+        return html.slice(0, at) + img + html.slice(at);
+      }
+    }
+  }
+  const firstP = html.indexOf('</p>');
+  if (firstP !== -1) return html.slice(0, firstP + 4) + img + html.slice(firstP + 4);
+  return html + img;
+}
+
 const LANGS = [
   { code: 'pt', label: 'Português' },
   { code: 'en', label: 'English' },
@@ -58,7 +75,7 @@ const BlogArticleEditor = () => {
   const [showAIModal, setShowAIModal] = useState(false);
   const [showAIImageModal, setShowAIImageModal] = useState(false);
   const fileInputRef = useRef(null);
-  const { loading: aiLoading, operation: aiOperation, aiGenerateBlogArticle, aiTranslateBlogArticle, aiGenerateImage } = useAI();
+  const { loading: aiLoading, operation: aiOperation, aiGenerateBlogArticle, aiTranslateBlogArticle, aiGetArticleImagePrompts, aiGenerateImage } = useAI();
   const aiReady = checkAIReady().configured;
 
   const [categories, setCategories] = useState([]);
@@ -244,18 +261,45 @@ const BlogArticleEditor = () => {
     }
   };
 
-  const handleAIGenerate = async (prompt) => {
+  const handleAIGenerate = async (prompt, withImages = false) => {
     const result = await aiGenerateBlogArticle(prompt, 'pt');
     if (!result) return;
 
     const hasContent = form.title_pt.trim();
     if (hasContent && !window.confirm('Isto irá substituir o conteúdo PT existente. Continuar?')) return;
 
+    let finalContent = result.content || '';
+
+    if (withImages && result.title && finalContent) {
+      const h2Texts = [...finalContent.matchAll(/<h2[^>]*>(.*?)<\/h2>/gi)]
+        .map(m => m[1].replace(/<[^>]*>/g, '').trim());
+
+      const imagePlan = await aiGetArticleImagePrompts(result.title, h2Texts);
+      if (imagePlan && Array.isArray(imagePlan)) {
+        for (const item of imagePlan.slice(0, 3)) {
+          const blob = await aiGenerateImage(item.prompt);
+          if (!blob) continue;
+          try {
+            const rawFile = new File([blob], 'ai-article-img.png', { type: 'image/png' });
+            const file = convertWebp ? await convertToWebp(rawFile) : rawFile;
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('folder', 'blog');
+            const record = await pb.collection('media').create(fd, { requestKey: null });
+            const url = pb.files.getURL(record, record.file);
+            finalContent = insertImageIntoHtml(finalContent, url, item.afterH2Text ?? null);
+          } catch (err) {
+            console.warn('[AI Image] Upload failed:', err);
+          }
+        }
+      }
+    }
+
     setForm(f => ({
       ...f,
       title_pt: result.title || f.title_pt,
       description_pt: result.description || f.description_pt,
-      content_pt: result.content || f.content_pt,
+      content_pt: finalContent,
       category: categories.some(c => c.slug === result.category) ? result.category : f.category,
     }));
     setActiveLang('pt');

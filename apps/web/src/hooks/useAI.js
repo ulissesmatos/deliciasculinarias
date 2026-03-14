@@ -11,6 +11,7 @@ import {
   translateBlogArticle,
   testConnection,
   generateImage,
+  generateArticleImagePrompts,
 } from '@/lib/aiService.js';
 import { useToast } from '@/hooks/use-toast';
 
@@ -80,6 +81,10 @@ export function useAI() {
     return run('A gerar imagem…', () => generateImage(prompt));
   }, [run]);
 
+  const aiGetArticleImagePrompts = useCallback((title, h2Sections) => {
+    return run('A planear imagens…', () => generateArticleImagePrompts(title, h2Sections));
+  }, [run]);
+
   /* ---------- Test ---------- */
 
   const aiTestConnection = useCallback((provider, apiKey, model) => {
@@ -93,6 +98,7 @@ export function useAI() {
     aiTranslateRecipe,
     aiGenerateBlogArticle,
     aiTranslateBlogArticle,
+    aiGetArticleImagePrompts,
     aiGenerateImage,
     aiTestConnection,
   };

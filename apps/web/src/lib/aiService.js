@@ -438,3 +438,48 @@ export async function generateImage(prompt) {
   for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
   return new Blob([bytes], { type: 'image/png' });
 }
+
+/**
+ * Given a blog article title and its H2 section headings, ask the AI to
+ * suggest 2-3 images with placement hints.
+ *
+ * @param {string}   articleTitle
+ * @param {string[]} h2Sections   - Array of H2 heading text strings
+ * @returns {Promise<Array<{ prompt: string, afterH2Text: string|null }>>}
+ */
+export async function generateArticleImagePrompts(articleTitle, h2Sections) {
+  const hasH2s = h2Sections.length > 0;
+  const sectionsList = hasH2s
+    ? h2Sections.map((s, i) => `${i + 1}. "${s}"`).join('\n')
+    : '(sem secções, apenas introdução)';
+
+  const messages = [
+    {
+      role: 'system',
+      content: `You are a culinary content editor for "Delícias Culinárias".
+Given a blog article title and its section headings, suggest 2 to 3 images to visually enrich the article.
+
+IMPORTANT: Respond ONLY with a valid JSON array of 2 or 3 objects:
+[
+  { "prompt": "...", "afterH2Text": "exact section title or null" },
+  ...
+]
+
+Rules:
+- Each "prompt" must be in English, detailed culinary food photography style.
+  Format: "Professional culinary food photography, [specific subject], editorial style, soft natural lighting, neutral background, appetizing, high resolution"
+- "afterH2Text" must be EXACTLY one of the provided section titles (case-sensitive), or null to place the image after the introduction paragraph.
+- Distribute images evenly: put one near the start (null or first section), others in middle and later sections.
+- If there are no sections, all afterH2Text values must be null.`,
+    },
+    {
+      role: 'user',
+      content: `Article title: "${articleTitle}"\n\nSections:\n${sectionsList}`,
+    },
+  ];
+
+  const raw = await chatCompletion(messages, { temperature: 0.7 });
+  const parsed = parseJSONResponse(raw);
+  if (!Array.isArray(parsed)) throw new Error('Formato de plano de imagens inválido.');
+  return parsed;
+}
