@@ -1,12 +1,10 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
-import { NodeSelection } from '@tiptap/pm/state';
-import { Extension } from '@tiptap/core';
+import { useEditor, EditorContent, useEditorState, isNodeSelection } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
-import TextStyle from '@tiptap/extension-text-style';
+import { TextStyle, FontSize } from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -18,30 +16,6 @@ import {
   Link as LinkIcon, Link2Off, ImageIcon, Highlighter,
   Undo, Redo, Code, Minus, Upload, Loader2, Trash2, RefreshCw,
 } from 'lucide-react';
-
-// ── Font Size extension (piggybacks on TextStyle mark) ───────────────────────
-const FontSize = Extension.create({
-  name: 'fontSize',
-  addOptions() { return { types: ['textStyle'] }; },
-  addGlobalAttributes() {
-    return [{
-      types: this.options.types,
-      attributes: {
-        fontSize: {
-          default: null,
-          parseHTML: el => el.style.fontSize || null,
-          renderHTML: attrs => attrs.fontSize ? { style: `font-size: ${attrs.fontSize}` } : {},
-        },
-      },
-    }];
-  },
-  addCommands() {
-    return {
-      setFontSize: (size) => ({ chain }) => chain().setMark('textStyle', { fontSize: size }).run(),
-      unsetFontSize: () => ({ chain }) => chain().setMark('textStyle', { fontSize: null }).run(),
-    };
-  },
-});
 
 // ── Custom Image — adds stored `class` attribute so per-image alignment works ─
 const CustomImage = Image.extend({
@@ -261,6 +235,16 @@ const RichTextEditor = ({ value, onChange, placeholder, onImageUpload }) => {
     uploadAndInsert(editor.view, file, null);
   }, [editor, uploadAndInsert]);
 
+  // Detect if an image node is currently selected (drives the inline image toolbar)
+  const isImageSelected = useEditorState({
+    editor,
+    selector: ({ editor }) => {
+      if (!editor) return false;
+      const { selection } = editor.state;
+      return isNodeSelection(selection) && selection.node?.type.name === 'image';
+    },
+  });
+
   // Replace the currently selected image
   const handleReplaceImage = () => {
     if (onImageUploadRef.current) {
@@ -300,50 +284,36 @@ const RichTextEditor = ({ value, onChange, placeholder, onImageUpload }) => {
         </div>
       )}
 
-      {/* Floating bubble menu — shown when an image node is selected */}
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          shouldShow={({ state }) => {
-            const { selection } = state;
-            return selection instanceof NodeSelection && selection.node.type.name === 'image';
-          }}
-          tippyOptions={{ duration: 150, placement: 'top' }}
-        >
-          <div className="flex items-center gap-0.5 bg-gray-900 text-white rounded-lg px-1.5 py-1 shadow-xl">
-            {/* Alignment */}
-            <button type="button" title="Alinhar à esquerda"
-              onClick={() => editor.chain().focus().updateAttributes('image', { class: IMG_ALIGN.left }).run()}
-              className="p-1.5 rounded hover:bg-white/20 transition-colors">
-              <AlignLeft size={13} />
-            </button>
-            <button type="button" title="Centrar"
-              onClick={() => editor.chain().focus().updateAttributes('image', { class: IMG_ALIGN.center }).run()}
-              className="p-1.5 rounded hover:bg-white/20 transition-colors">
-              <AlignCenter size={13} />
-            </button>
-            <button type="button" title="Alinhar à direita"
-              onClick={() => editor.chain().focus().updateAttributes('image', { class: IMG_ALIGN.right }).run()}
-              className="p-1.5 rounded hover:bg-white/20 transition-colors">
-              <AlignRight size={13} />
-            </button>
-
-            <div className="w-px h-4 bg-white/25 mx-0.5" />
-
-            {/* Replace */}
-            <button type="button" title="Substituir imagem" onClick={handleReplaceImage}
-              className="p-1.5 rounded hover:bg-white/20 transition-colors">
-              <RefreshCw size={13} />
-            </button>
-
-            {/* Remove */}
-            <button type="button" title="Remover imagem"
-              onClick={() => editor.chain().focus().deleteSelection().run()}
-              className="p-1.5 rounded hover:bg-red-500 transition-colors">
-              <Trash2 size={13} />
-            </button>
-          </div>
-        </BubbleMenu>
+      {/* Contextual image toolbar — shown when an image node is selected */}
+      {isImageSelected && editor && (
+        <div className="flex items-center gap-1 px-3 py-1.5 bg-sky-50 border-b border-sky-100">
+          <span className="text-xs text-sky-600 font-medium mr-1">Imagem:</span>
+          <button type="button" title="Float à esquerda"
+            onClick={() => editor.chain().focus().updateAttributes('image', { class: IMG_ALIGN.left }).run()}
+            className="p-1.5 rounded text-sky-700 hover:bg-sky-100 transition-colors">
+            <AlignLeft size={13} />
+          </button>
+          <button type="button" title="Centrar"
+            onClick={() => editor.chain().focus().updateAttributes('image', { class: IMG_ALIGN.center }).run()}
+            className="p-1.5 rounded text-sky-700 hover:bg-sky-100 transition-colors">
+            <AlignCenter size={13} />
+          </button>
+          <button type="button" title="Float à direita"
+            onClick={() => editor.chain().focus().updateAttributes('image', { class: IMG_ALIGN.right }).run()}
+            className="p-1.5 rounded text-sky-700 hover:bg-sky-100 transition-colors">
+            <AlignRight size={13} />
+          </button>
+          <div className="w-px h-4 bg-sky-200 mx-0.5" />
+          <button type="button" title="Substituir imagem" onClick={handleReplaceImage}
+            className="p-1.5 rounded text-sky-700 hover:bg-sky-100 transition-colors">
+            <RefreshCw size={13} />
+          </button>
+          <button type="button" title="Remover imagem"
+            onClick={() => editor.chain().focus().deleteSelection().run()}
+            className="p-1.5 rounded text-red-500 hover:bg-red-50 transition-colors">
+            <Trash2 size={13} />
+          </button>
+        </div>
       )}
 
       {/* Hidden file input for image replace */}
