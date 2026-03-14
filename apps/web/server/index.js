@@ -4,6 +4,7 @@ import { renderPage } from 'vike/server';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sirv from 'sirv';
+import { sitemapHandler } from './sitemap.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -13,6 +14,9 @@ async function startServer() {
   const app = express();
 
   app.use(compression());
+
+  // Sitemap — before static middleware so the dynamic version always wins
+  app.get('/sitemap.xml', sitemapHandler);
 
   if (isProduction) {
     // In production, serve pre-built client assets
