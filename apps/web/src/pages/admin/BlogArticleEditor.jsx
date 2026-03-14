@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAI } from '@/hooks/useAI.js';
 import { checkAIReady } from '@/lib/aiConfig.js';
 import AIGenerateModal from '@/components/admin/AIGenerateModal.jsx';
+import AIImageModal from '@/components/admin/AIImageModal.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 import { toSlug } from '@/lib/slugify.js';
 import { convertToWebp } from '@/lib/convertToWebp.js';
@@ -55,8 +56,9 @@ const BlogArticleEditor = () => {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [convertWebp] = useWebpConversion();
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showAIImageModal, setShowAIImageModal] = useState(false);
   const fileInputRef = useRef(null);
-  const { loading: aiLoading, operation: aiOperation, aiGenerateBlogArticle, aiTranslateBlogArticle } = useAI();
+  const { loading: aiLoading, operation: aiOperation, aiGenerateBlogArticle, aiTranslateBlogArticle, aiGenerateImage } = useAI();
   const aiReady = checkAIReady().configured;
 
   const [categories, setCategories] = useState([]);
@@ -221,6 +223,27 @@ const BlogArticleEditor = () => {
   };
 
   /* ---------- AI handlers ---------- */
+  const handleAIGenerateImage = async (prompt) => {
+    const blob = await aiGenerateImage(prompt);
+    if (!blob) return;
+    try {
+      const rawFile = new File([blob], 'ai-image.png', { type: 'image/png' });
+      const file = convertWebp ? await convertToWebp(rawFile) : rawFile;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'blog');
+      const record = await pb.collection('media').create(fd, { requestKey: null });
+      const url = pb.files.getURL(record, record.file);
+      setImagePreview(url);
+      setImageUrlOverride(url);
+      set('featured_image', null);
+      setShowAIImageModal(false);
+      toast({ title: 'Imagem gerada!', description: 'Adicionada à biblioteca de media.' });
+    } catch (err) {
+      toast({ title: 'Erro ao guardar imagem', description: err.message, variant: 'destructive' });
+    }
+  };
+
   const handleAIGenerate = async (prompt) => {
     const result = await aiGenerateBlogArticle(prompt, 'pt');
     if (!result) return;
@@ -375,7 +398,7 @@ const BlogArticleEditor = () => {
                     variant="outline"
                     onClick={() => setShowAIModal(true)}
                     disabled={aiLoading}
-                    className="flex items-center gap-2 text-primary border-primary/30 hover:bg-primary/5"
+                    className="flex items-center gap-2 text-primary border-primary/30 hover:bg-primary/5 hover:text-primary"
                   >
                     <Sparkles size={16} />
                     <span className="hidden sm:inline">Gerar com IA</span>
@@ -566,7 +589,7 @@ const BlogArticleEditor = () => {
                   className="hidden"
                   onChange={handleImageChange}
                 />
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-1.5">
                   <Button
                     type="button"
                     variant="outline"
@@ -600,6 +623,19 @@ const BlogArticleEditor = () => {
                     <Link2 size={13} />
                     URL
                   </Button>
+                  {aiReady && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/5 hover:text-primary"
+                      onClick={() => setShowAIImageModal(true)}
+                      disabled={aiLoading}
+                    >
+                      <Sparkles size={13} />
+                      Gerar Imagem
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -764,6 +800,17 @@ const BlogArticleEditor = () => {
           loading={aiLoading}
           operation={aiOperation}
           onClose={() => setShowAIModal(false)}
+        />
+      )}
+
+      {/* AI Image Modal */}
+      {showAIImageModal && (
+        <AIImageModal
+          subject={form.title_pt}
+          onGenerate={handleAIGenerateImage}
+          loading={aiLoading}
+          operation={aiOperation}
+          onClose={() => setShowAIImageModal(false)}
         />
       )}
     </>

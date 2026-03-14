@@ -387,3 +387,54 @@ Be creative, trendy, and avoid repeating topics. Use Brazilian Portuguese (sandu
 
   return parsed.slice(0, 6);
 }
+
+/**
+ * Generate an image using OpenAI DALL-E.
+ * Only works when the active provider is OpenAI.
+ * Returns a base64-encoded PNG blob (as a Blob object).
+ *
+ * @param {string} prompt - Description of the image to generate
+ * @returns {Promise<Blob>}
+ */
+export async function generateImage(prompt) {
+  const provider = getActiveProvider();
+
+  if (provider !== 'openai') {
+    throw new Error('A geração de imagens requer o OpenAI como fornecedor ativo. Configure em Configurações de IA.');
+  }
+
+  const apiKey = getAPIKey('openai');
+  if (!apiKey) {
+    throw new Error('API key do OpenAI não configurada. Configure em Configurações de IA.');
+  }
+
+  const res = await fetch('/api/ai/openai/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'dall-e-3',
+      prompt,
+      n: 1,
+      size: '1024x1024',
+      response_format: 'b64_json',
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    const msg = errBody?.error?.message || `HTTP ${res.status}`;
+    throw new Error(`Erro ao gerar imagem: ${msg}`);
+  }
+
+  const data = await res.json();
+  const b64 = data.data?.[0]?.b64_json;
+  if (!b64) throw new Error('Resposta de imagem vazia da API.');
+
+  const byteChars = atob(b64);
+  const bytes = new Uint8Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+  return new Blob([bytes], { type: 'image/png' });
+}
