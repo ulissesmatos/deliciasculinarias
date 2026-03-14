@@ -189,11 +189,6 @@ const RichTextEditor = ({ value, onChange, placeholder, onImageUpload }) => {
     return true;
   }, []);
 
-  const handleMenuUpload = useCallback((file) => {
-    if (!editor) return;
-    uploadAndInsert(editor, file);
-  }, [editor, uploadAndInsert]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
