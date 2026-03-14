@@ -239,6 +239,15 @@ const BlogArticleEditor = () => {
     set('featured_image', null);
   };
 
+  const handleEditorImageUpload = async (rawFile) => {
+    const file = convertWebp ? await convertToWebp(rawFile) : rawFile;
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', 'blog');
+    const record = await pb.collection('media').create(fd, { requestKey: null });
+    return pb.files.getURL(record, record.file);
+  };
+
   /* ---------- AI handlers ---------- */
   const handleAIGenerateImage = async (prompt) => {
     const blob = await aiGenerateImage(prompt);
@@ -588,6 +597,7 @@ const BlogArticleEditor = () => {
                     value={form[`content_${activeLang}`]}
                     onChange={v => set(`content_${activeLang}`, v)}
                     placeholder="Comece a escrever o conteúdo do artigo…"
+                    onImageUpload={handleEditorImageUpload}
                   />
                 </div>
               </div>

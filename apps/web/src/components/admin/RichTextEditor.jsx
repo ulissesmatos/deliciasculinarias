@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -13,7 +13,7 @@ import {
   List, ListOrdered, Quote,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   Link as LinkIcon, Link2Off, ImageIcon, Highlighter,
-  Undo, Redo, Code, Minus,
+  Undo, Redo, Code, Minus, Upload, Loader2,
 } from 'lucide-react';
 
 const MenuButton = ({ onClick, isActive, disabled, title, children }) => (
@@ -34,7 +34,8 @@ const MenuButton = ({ onClick, isActive, disabled, title, children }) => (
 
 const Divider = () => <div className="w-px h-6 bg-gray-200 mx-0.5" />;
 
-const MenuBar = ({ editor }) => {
+const MenuBar = ({ editor, onUploadImage, uploading }) => {
+  const fileInputRef = useRef(null);
   if (!editor) return null;
 
   const setLink = useCallback(() => {
@@ -52,6 +53,12 @@ const MenuBar = ({ editor }) => {
     const url = window.prompt('URL da imagem:');
     if (url) editor.chain().focus().setImage({ src: url }).run();
   }, [editor]);
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) onUploadImage?.(file);
+    e.target.value = '';
+  };
 
   const s = 15;
 
@@ -140,16 +147,57 @@ const MenuBar = ({ editor }) => {
       <MenuButton onClick={addImage} title="Inserir imagem por URL">
         <ImageIcon size={s} />
       </MenuButton>
+      {onUploadImage && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <MenuButton
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            title="Fazer upload de imagem"
+          >
+            {uploading ? <Loader2 size={s} className="animate-spin" /> : <Upload size={s} />}
+          </MenuButton>
+        </>
+      )}
     </div>
   );
 };
 
-const RichTextEditor = ({ value, onChange, placeholder }) => {
+const RichTextEditor = ({ value, onChange, placeholder, onImageUpload }) => {
+  const [uploading, setUploading] = useState(false);
+
+  // Use a ref so the paste/drop handlers always see the latest callback
+  // without needing to recreate the editor
+  const onImageUploadRef = useRef(onImageUpload);
+  React.useEffect(() => { onImageUploadRef.current = onImageUpload; }, [onImageUpload]);
+
+  const uploadAndInsert = useCallback((editor, file) => {
+    if (!onImageUploadRef.current) return false;
+    setUploading(true);
+    onImageUploadRef.current(file)
+      .then(url => {
+        editor.chain().focus().setImage({ src: url }).run();
+      })
+      .catch(err => console.error('[RichTextEditor] Image upload failed:', err))
+      .finally(() => setUploading(false));
+    return true;
+  }, []);
+
+  const handleMenuUpload = useCallback((file) => {
+    if (!editor) return;
+    uploadAndInsert(editor, file);
+  }, [editor, uploadAndInsert]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
-        // Disable built-in link & underline so our explicit extensions take precedence
         link: false,
         underline: false,
       }),
@@ -168,8 +216,56 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
       attributes: {
         class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] px-6 py-4 text-gray-800',
       },
+      handlePaste(view, event) {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find(i => i.type.startsWith('image/'));
+        if (!imageItem || !onImageUploadRef.current) return false;
+        const file = imageItem.getAsFile();
+        if (!file) return false;
+        event.preventDefault();
+        setUploading(true);
+        onImageUploadRef.current(file)
+          .then(url => {
+            view.dispatch(view.state.tr.replaceSelectionWith(
+              view.state.schema.nodes.image.create({ src: url })
+            ));
+          })
+          .catch(err => console.error('[RichTextEditor] Paste upload failed:', err))
+          .finally(() => setUploading(false));
+        return true;
+      },
+      handleDrop(view, event, _slice, moved) {
+        if (moved) return false;
+        const items = Array.from(event.dataTransfer?.items || []);
+        const imageItem = items.find(i => i.type.startsWith('image/'));
+        if (!imageItem || !onImageUploadRef.current) return false;
+        const file = imageItem.getAsFile();
+        if (!file) return false;
+        event.preventDefault();
+        // Insert at drop position
+        const coords = { left: event.clientX, top: event.clientY };
+        const pos = view.posAtCoords(coords)?.pos;
+        setUploading(true);
+        onImageUploadRef.current(file)
+          .then(url => {
+            const node = view.state.schema.nodes.image.create({ src: url });
+            const tr = view.state.tr;
+            if (pos != null) tr.insert(pos, node);
+            else tr.replaceSelectionWith(node);
+            view.dispatch(tr);
+          })
+          .catch(err => console.error('[RichTextEditor] Drop upload failed:', err))
+          .finally(() => setUploading(false));
+        return true;
+      },
     },
   });
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stableUpload = useCallback((file) => {
+    if (!editor) return;
+    uploadAndInsert(editor, file);
+  }, [editor]); // editor ref is stable after mount
 
   // Sync external value changes (e.g. language tab switch)
   React.useEffect(() => {
@@ -182,8 +278,16 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
   }, [value, editor]);
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-      <MenuBar editor={editor} />
+    <div className={`border rounded-lg overflow-hidden bg-white transition-colors ${
+      uploading ? 'border-primary/40' : 'border-gray-200'
+    }`}>
+      <MenuBar editor={editor} onUploadImage={onImageUpload ? stableUpload : null} uploading={uploading} />
+      {uploading && (
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-primary/5 border-b border-primary/20 text-xs text-primary">
+          <Loader2 size={12} className="animate-spin" />
+          A fazer upload da imagem…
+        </div>
+      )}
       <EditorContent editor={editor} />
     </div>
   );
