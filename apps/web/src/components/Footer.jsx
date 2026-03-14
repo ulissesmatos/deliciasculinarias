@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { route } from '@/lib/routes.js';
 import { ChefHat, Facebook, Instagram, Twitter, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -70,22 +69,22 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4">{t('footer.quickLinks')}</h3>
             <div className="space-y-2">
-              <Link to={route(language, 'home')} className="block text-gray-400 hover:text-primary transition-colors">
+              <a href={route(language, 'home')} className="block text-gray-400 hover:text-primary transition-colors">
                 {t('nav.home')}
-              </Link>
-              <Link to={route(language, 'recipes')} className="block text-gray-400 hover:text-primary transition-colors">
+              </a>
+              <a href={route(language, 'recipes')} className="block text-gray-400 hover:text-primary transition-colors">
                 {t('nav.recipes')}
-              </Link>
-              <Link to={route(language, 'about')} className="block text-gray-400 hover:text-primary transition-colors">
+              </a>
+              <a href={route(language, 'about')} className="block text-gray-400 hover:text-primary transition-colors">
                 {t('nav.about')}
-              </Link>
-              <Link to={route(language, 'contact')} className="block text-gray-400 hover:text-primary transition-colors">
+              </a>
+              <a href={route(language, 'contact')} className="block text-gray-400 hover:text-primary transition-colors">
                 {t('nav.contact')}
-              </Link>
+              </a>
               {!isAuthenticated && (
-                <Link to="/admin/login" className="block text-gray-500 hover:text-primary transition-colors text-sm mt-4">
+                <a href="/admin/login" className="block text-gray-500 hover:text-primary transition-colors text-sm mt-4">
                   {t('nav.admin')}
-                </Link>
+                </a>
               )}
             </div>
           </div>

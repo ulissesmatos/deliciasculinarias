@@ -1,5 +1,5 @@
 # ════════════════════════════════════════════════════════
-# Stage 1 – Build the React / Vite frontend
+# Stage 1 – Build the React / Vike frontend (SSR)
 # ════════════════════════════════════════════════════════
 FROM node:20-alpine AS web-builder
 
@@ -12,20 +12,23 @@ COPY apps/pocketbase/package.json ./apps/pocketbase/
 
 RUN npm ci
 
-# Copy source and build
+# Copy source and build (Vike outputs to dist/client + dist/server)
 COPY apps/web ./apps/web
 RUN npm --prefix apps/web run build
 
+# Prune dev dependencies for a smaller runtime image
+RUN npm prune --omit=dev
+
 
 # ════════════════════════════════════════════════════════
-# Stage 2 – Runtime: nginx + PocketBase under supervisord
+# Stage 2 – Runtime: nginx + Node SSR + PocketBase
 # ════════════════════════════════════════════════════════
-FROM nginx:1-alpine
+FROM node:20-alpine
 
 ARG PB_VERSION=0.36.1
 
-# Add supervisord, wget, unzip, jq (all small on Alpine)
-RUN apk add --no-cache supervisor wget unzip ca-certificates jq
+# Add supervisord, wget, unzip, jq, nginx (all small on Alpine)
+RUN apk add --no-cache supervisor wget unzip ca-certificates jq nginx
 
 # ── Download the correct PocketBase binary for this machine's arch ──────────
 # Coolify builds natively on the VPS (ARM64), so uname -m returns aarch64.
@@ -51,8 +54,13 @@ RUN mkdir -p /app/pocketbase/pb_migrations /app/pocketbase/pb_hooks
 COPY apps/pocketbase/pb_migrations/ /app/pocketbase/pb_migrations/
 COPY apps/pocketbase/pb_hooks/      /app/pocketbase/pb_hooks/
 
-# ── Copy built frontend ──────────────────────────────────────────────────────
-COPY --from=web-builder /app/dist/apps/web /usr/share/nginx/html
+# ── Copy built frontend (SSR: client + server bundles) ────────────────────────
+COPY --from=web-builder /app/apps/web/dist      /app/web/dist
+COPY --from=web-builder /app/apps/web/server    /app/web/server
+COPY --from=web-builder /app/apps/web/package.json /app/web/package.json
+
+# ── Copy production node_modules (express, vike, react, etc.) ─────────────────
+COPY --from=web-builder /app/node_modules       /app/node_modules
 
 # ── Copy runtime configs ─────────────────────────────────────────────────────
 COPY deploy/nginx.conf            /etc/nginx/nginx.conf

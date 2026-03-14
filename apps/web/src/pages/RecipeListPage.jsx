@@ -1,26 +1,24 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Helmet } from 'react-helmet';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import RecipeCard from '@/components/RecipeCard.jsx';
-import HreflangTags from '@/components/HreflangTags.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
 const PAGE_SIZE = 12;
 
-const RecipeListPage = () => {
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
+const RecipeListPage = ({ initialRecipes: ssrRecipes, totalPages: ssrTotalPages, totalItems: ssrTotalItems }) => {
+  const [recipes, setRecipes] = useState(ssrRecipes || []);
+  const [loading, setLoading] = useState(!ssrRecipes);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(ssrTotalPages || 1);
+  const [totalItems, setTotalItems] = useState(ssrTotalItems || 0);
   const { t } = useLanguage();
 
   // Debounce the search input by 400ms
@@ -76,12 +74,6 @@ const RecipeListPage = () => {
 
   return (
     <>
-      <HreflangTags routeName="recipes" />
-      <Helmet>
-        <title>{t('recipes.title')} - {t('home.title')}</title>
-        <meta name="description" content={t('recipes.desc')} />
-      </Helmet>
-
       <main className="min-h-screen bg-cream">
         <section className="bg-primary text-white py-16">
           <div className="container mx-auto px-4">

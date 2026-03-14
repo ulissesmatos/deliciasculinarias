@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
+import { useParams, useNavigate } from '@/lib/vikeRouter.jsx';
 import { ArrowLeft, Calendar, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -10,19 +9,19 @@ import { getTranslation } from '@/lib/translations.js';
 import { useBlogCategories } from '@/hooks/useBlogCategories.js';
 import { route } from '@/lib/routes.js';
 import CommentSection from '@/components/CommentSection.jsx';
-import HreflangTags from '@/components/HreflangTags.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
-const BlogDetailPage = () => {
+const BlogDetailPage = ({ article: ssrArticle }) => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [article, setArticle] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [article, setArticle] = useState(ssrArticle || null);
+  const [loading, setLoading] = useState(!ssrArticle);
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const { getCategoryName } = useBlogCategories();
 
   useEffect(() => {
+    if (ssrArticle) return;
     let cancelled = false;
 
     const fetchArticle = async () => {
@@ -98,9 +97,9 @@ const BlogDetailPage = () => {
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-gray-600">{t('blog.notFound')}</p>
-          <Link to={route(language, 'blog')} className="text-secondary hover:underline mt-4 inline-block">
+          <a href={route(language, 'blog')} className="text-secondary hover:underline mt-4 inline-block">
             {t('blog.backToList')}
-          </Link>
+          </a>
         </div>
       </div>
     );
@@ -135,17 +134,6 @@ const BlogDetailPage = () => {
 
   return (
     <>
-      <HreflangTags routeName="blogArticle" params={{ id: articleId }} />
-      <Helmet>
-        <title>{`${title} - ${t('home.title')}`}</title>
-        <meta name="description" content={description || title} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description || ''} />
-        <meta property="og:image" content={imageUrl} />
-        <meta property="og:type" content="article" />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
-
       <main className="min-h-screen bg-cream pb-16">
         <div className="relative h-[50vh] min-h-[400px] overflow-hidden">
           <img 
@@ -156,10 +144,10 @@ const BlogDetailPage = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
           <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
             <div className="container mx-auto max-w-4xl">
-              <Link to={route(language, 'blog')} className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors">
+              <a href={route(language, 'blog')} className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors">
                 <ArrowLeft size={20} className="mr-2" />
                 {t('blog.backToList')}
-              </Link>
+              </a>
               
               {article.category && (
                 <div className="mb-4">

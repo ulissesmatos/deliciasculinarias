@@ -5,6 +5,17 @@ export const getTranslation = (obj, field, lang) => {
   return obj[`${field}_${lang}`] || obj[`${field}_es`] || obj[field] || '';
 };
 
+/** Standalone translate function — works without React context (e.g. in +Head.jsx) */
+export function translate(lang, path) {
+  const keys = path.split('.');
+  let current = translations[lang] || translations['pt'];
+  for (const key of keys) {
+    if (!current || current[key] === undefined) return path;
+    current = current[key];
+  }
+  return current;
+}
+
 export const translations = {
   en: {
     nav: {

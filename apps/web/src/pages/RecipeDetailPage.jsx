@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
+import { useParams, useNavigate } from '@/lib/vikeRouter.jsx';
 import { Clock, Users, Share2, Facebook, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -12,19 +11,19 @@ import { route } from '@/lib/routes.js';
 import IngredientChecklist from '@/components/IngredientChecklist.jsx';
 import AffiliateProductCard from '@/components/AffiliateProductCard.jsx';
 import CommentSection from '@/components/CommentSection.jsx';
-import HreflangTags from '@/components/HreflangTags.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
-const RecipeDetailPage = () => {
+const RecipeDetailPage = ({ recipe: ssrRecipe, affiliateProducts: ssrAffiliateProducts }) => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [recipe, setRecipe] = useState(null);
-  const [affiliateProducts, setAffiliateProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [recipe, setRecipe] = useState(ssrRecipe || null);
+  const [affiliateProducts, setAffiliateProducts] = useState(ssrAffiliateProducts || []);
+  const [loading, setLoading] = useState(!ssrRecipe);
   const { toast } = useToast();
   const { t, language } = useLanguage();
 
   useEffect(() => {
+    if (ssrRecipe) return;
     let cancelled = false;
 
     const fetchRecipe = async () => {
@@ -100,7 +99,7 @@ const RecipeDetailPage = () => {
     }
   };
 
-  const shareUrl = window.location.href;
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const handleShare = (platform) => {
     const title = getTranslation(recipe, 'title', language) || 'Check out this recipe';
@@ -178,17 +177,6 @@ const RecipeDetailPage = () => {
 
   return (
     <>
-      <HreflangTags routeName="recipe" params={{ id: recipeId }} />
-      <Helmet>
-        <title>{`${title} - ${t('home.title')}`}</title>
-        <meta name="description" content={description || `Learn how to make ${title}`} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description || ''} />
-        <meta property="og:image" content={imageUrl} />
-        <meta property="og:type" content="article" />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
-
       <main className="min-h-screen bg-cream">
         <div className="relative h-96 overflow-hidden">
           <img 

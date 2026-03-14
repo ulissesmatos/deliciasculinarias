@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { getTranslation } from '@/lib/translations.js';
@@ -44,7 +43,7 @@ const BlogCard = ({ article }) => {
       transition={{ duration: 0.3 }}
       className="bg-white rounded-xl shadow-lg hover:shadow-2xl overflow-hidden transition-all duration-300 flex flex-col h-full"
     >
-      <Link to={route(language, 'blogArticle', { slug })} className="flex flex-col h-full">
+      <a href={route(language, 'blogArticle', { slug })} className="flex flex-col h-full">
         <div className="relative h-48 overflow-hidden flex-shrink-0">
           <img
             src={imageUrl}
@@ -74,7 +73,7 @@ const BlogCard = ({ article }) => {
             </span>
           </div>
         </div>
-      </Link>
+      </a>
     </motion.div>
   );
 };

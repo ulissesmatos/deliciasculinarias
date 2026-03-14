@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import { Heart, Users, Globe } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
@@ -10,11 +9,6 @@ const AboutPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{t('about.title')}</title>
-        <meta name="description" content={t('about.desc')} />
-      </Helmet>
-
       <main className="min-h-screen bg-cream">
         <section className="bg-primary text-white py-16">
           <div className="container mx-auto px-4">

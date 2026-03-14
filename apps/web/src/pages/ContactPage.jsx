@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,11 +65,6 @@ const ContactPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{t('contact.title')} - {t('home.title')}</title>
-        <meta name="description" content={t('contact.desc')} />
-      </Helmet>
-
       <main className="min-h-screen bg-cream">
         <section className="bg-primary text-white py-16">
           <div className="container mx-auto px-4">

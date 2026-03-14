@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,19 +9,19 @@ import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { route } from '@/lib/routes.js';
 import RecipeCard from '@/components/RecipeCard.jsx';
 import BlogCard from '@/components/BlogCard.jsx';
-import HreflangTags from '@/components/HreflangTags.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 
-const HomePage = () => {
-  const [featuredRecipes, setFeaturedRecipes] = useState([]);
-  const [featuredArticles, setFeaturedArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+const HomePage = ({ featuredRecipes: initialRecipes, featuredArticles: initialArticles }) => {
+  const [featuredRecipes, setFeaturedRecipes] = useState(initialRecipes || []);
+  const [featuredArticles, setFeaturedArticles] = useState(initialArticles || []);
+  const [loading, setLoading] = useState(!initialRecipes);
   const [email, setEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const { toast } = useToast();
   const { t, language } = useLanguage();
 
   useEffect(() => {
+    if (initialRecipes) return;
     const fetchData = async () => {
       try {
         const [recipesRes, articlesRes] = await Promise.all([
@@ -84,29 +82,6 @@ const HomePage = () => {
 
   return (
     <>
-      <HreflangTags routeName="home" />
-      <Helmet>
-        <title>{t('home.title')} - {t('home.subtitle')}</title>
-        <meta name="description" content={t('home.desc')} />
-        <meta property="og:title" content={`${t('home.title')} - ${t('home.subtitle')}`} />
-        <meta property="og:description" content={t('home.desc')} />
-        <meta property="og:image" content="https://images.unsplash.com/photo-1528735602780-2552fd46c7af" />
-        <meta property="og:type" content="website" />
-        <script type="application/ld+json">{JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          'name': 'Delícias Culinárias',
-          'url': 'https://deliciasculinarias.shop',
-          'description': t('home.desc'),
-          'inLanguage': language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es',
-          'publisher': {
-            '@type': 'Organization',
-            'name': 'Delícias Culinárias',
-            'url': 'https://deliciasculinarias.shop'
-          }
-        })}</script>
-      </Helmet>
-
       <main>
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
           {/* img instead of CSS background-image: browser can preload it and it counts as LCP element */}
@@ -158,17 +133,17 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
-              <Link to={route(language, 'recipes')}>
+              <a href={route(language, 'recipes')}>
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 w-full sm:w-auto">
                   {t('home.cta')}
                   <ArrowRight className="ml-2" />
                 </Button>
-              </Link>
-              <Link to={route(language, 'blog')}>
+              </a>
+              <a href={route(language, 'blog')}>
                 <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 text-lg px-8 py-6 w-full sm:w-auto">
                   {t('nav.blog')}
                 </Button>
-              </Link>
+              </a>
             </motion.div>
           </div>
         </section>
@@ -214,12 +189,12 @@ const HomePage = () => {
             )}
 
             <div className="text-center mt-12">
-              <Link to={route(language, 'recipes')}>
+              <a href={route(language, 'recipes')}>
                 <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary hover:text-white">
                   {t('home.viewAll')}
                   <ArrowRight className="ml-2" />
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
         </section>
@@ -265,12 +240,12 @@ const HomePage = () => {
             )}
 
             <div className="text-center mt-12">
-              <Link to={route(language, 'blog')}>
+              <a href={route(language, 'blog')}>
                 <Button variant="outline" size="lg" className="border-secondary text-secondary hover:bg-secondary hover:text-white">
                   {t('home.viewAllBlog')}
                   <ArrowRight className="ml-2" />
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
         </section>

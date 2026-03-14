@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChefHat, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { useAuth } from '@/hooks/useAuth.jsx';
 import { route } from '@/lib/routes.js';
+import { usePageContext } from '@/lib/vikeRouter.jsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,8 @@ import {
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
+  const pageContext = usePageContext();
+  const pathname = pageContext?.urlPathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
   const { t, language, setLanguage } = useLanguage();
   const { isAuthenticated } = useAuth();
 
@@ -34,8 +35,8 @@ const Header = () => {
   // Active when the pathname starts with the link path (handles nested routes)
   const isActive = (path) =>
     path === route(language, 'home')
-      ? location.pathname === path
-      : location.pathname.startsWith(path);
+      ? pathname === path
+      : pathname.startsWith(path);
 
   const languages = [
     { code: 'es', name: 'Español', flag: '🇪🇸' },
@@ -47,18 +48,18 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-white shadow-md">
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to={route(language, 'home')} className="flex items-center gap-2 group">
+          <a href={route(language, 'home')} className="flex items-center gap-2 group">
             <ChefHat className="text-primary w-8 h-8 group-hover:rotate-12 transition-transform" />
             <span className="text-2xl font-bold text-gray-900">
               Delícias <span className="text-primary">Culinárias</span>
             </span>
-          </Link>
+          </a>
 
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.path}
-                to={link.path}
+                href={link.path}
                 className={`font-semibold transition-colors relative ${
                   isActive(link.path) 
                     ? 'text-primary' 
@@ -72,7 +73,7 @@ const Header = () => {
                     className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary"
                   />
                 )}
-              </Link>
+              </a>
             ))}
 
             <DropdownMenu>
@@ -113,9 +114,9 @@ const Header = () => {
             >
               <div className="flex flex-col gap-4">
                 {navLinks.map((link) => (
-                  <Link
+                  <a
                     key={link.path}
-                    to={link.path}
+                    href={link.path}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`font-semibold py-2 px-4 rounded-lg transition-colors ${
                       isActive(link.path)
@@ -124,7 +125,7 @@ const Header = () => {
                     }`}
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 ))}
                 <div className="flex gap-2 px-4 pt-2 border-t border-gray-100">
                   {languages.map((lang) => (

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Clock, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
@@ -43,7 +42,7 @@ const RecipeCard = ({ recipe }) => {
       transition={{ duration: 0.3 }}
       className="bg-white rounded-xl shadow-lg hover:shadow-2xl overflow-hidden transition-all duration-300"
     >
-      <Link to={route(language, 'recipe', { slug })}>
+      <a href={route(language, 'recipe', { slug })}>
         <div className="relative h-48 overflow-hidden">
           <img
             src={imageUrl}
@@ -85,7 +84,7 @@ const RecipeCard = ({ recipe }) => {
             {t('common.viewRecipe')}
           </button>
         </div>
-      </Link>
+      </a>
     </motion.div>
   );
 };

@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
@@ -8,20 +7,20 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage.jsx';
 import { getTranslation } from '@/lib/translations.js';
 import BlogCard from '@/components/BlogCard.jsx';
-import HreflangTags from '@/components/HreflangTags.jsx';
 import { useBlogCategories } from '@/hooks/useBlogCategories.js';
 import pb from '@/lib/pocketbaseClient.js';
 
-const BlogPage = () => {
-  const [articles, setArticles] = useState([]);
-  const [filteredArticles, setFilteredArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+const BlogPage = ({ initialArticles: ssrArticles }) => {
+  const [articles, setArticles] = useState(ssrArticles || []);
+  const [filteredArticles, setFilteredArticles] = useState(ssrArticles || []);
+  const [loading, setLoading] = useState(!ssrArticles);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const { t, language } = useLanguage();
   const { categories: dynamicCategories, getCategoryName } = useBlogCategories();
 
   useEffect(() => {
+    if (ssrArticles) return;
     fetchArticles();
   }, []);
 
@@ -67,12 +66,6 @@ const BlogPage = () => {
 
   return (
     <>
-      <HreflangTags routeName="blog" />
-      <Helmet>
-        <title>{t('blog.title')} - {t('home.title')}</title>
-        <meta name="description" content={t('blog.desc')} />
-      </Helmet>
-
       <main className="min-h-screen bg-cream">
         <section className="bg-secondary text-white py-16">
           <div className="container mx-auto px-4">
