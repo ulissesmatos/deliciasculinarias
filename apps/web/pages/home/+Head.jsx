@@ -25,6 +25,18 @@ export default function Head() {
 
   return (
     <>
+      {/* Preload the hero image so the browser fetches it before JS runs, cutting LCP */}
+      <link
+        rel="preload"
+        as="image"
+        imageSrcSet="
+          https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=828&q=75&auto=format&fit=crop 828w,
+          https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1280&q=75&auto=format&fit=crop 1280w,
+          https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1920&q=75&auto=format&fit=crop 1920w
+        "
+        imageSizes="100vw"
+        fetchPriority="high"
+      />
       <title>{pageTitle}</title>
       <meta name="description" content={desc} />
       <meta property="og:title" content={pageTitle} />

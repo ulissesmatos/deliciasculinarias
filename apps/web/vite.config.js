@@ -88,6 +88,18 @@ export default defineConfig({
 					if (id.includes('node_modules/react-helmet')) {
 						return 'vendor-helmet';
 					}
+					if (id.includes('node_modules/@tiptap/') || id.includes('node_modules/prosemirror-')) {
+						return 'vendor-tiptap';
+					}
+					if (id.includes('node_modules/lucide-react/')) {
+						return 'vendor-icons';
+					}
+					if (id.includes('node_modules/@radix-ui/')) {
+						return 'vendor-radix';
+					}
+					if (id.includes('node_modules/zod/') || id.includes('node_modules/react-hook-form/')) {
+						return 'vendor-forms';
+					}
 				}
 			}
 		}

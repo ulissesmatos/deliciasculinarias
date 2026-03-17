@@ -50,6 +50,7 @@ const BlogCard = ({ article }) => {
             alt={title}
             loading="lazy"
             decoding="async"
+            sizes="(min-width: 768px) 33vw, 100vw"
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
           />
           {article.category && (
