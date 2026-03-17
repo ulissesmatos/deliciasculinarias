@@ -1,5 +1,6 @@
 import { usePageContext } from 'vike-react/usePageContext';
 import { translate } from '@/lib/translations.js';
+import HreflangTags from '@/components/HreflangTags.jsx';
 
 export default function Head() {
   const { routeParams } = usePageContext();
@@ -9,6 +10,7 @@ export default function Head() {
     <>
       <title>{t('contact.title')} - {t('home.title')}</title>
       <meta name="description" content={t('contact.desc')} />
+      <HreflangTags routeName="contact" />
     </>
   );
 }
