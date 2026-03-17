@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "node server/index.js",
-    "build": "node tools/generate-llms.js || true && vite build",
+    "build": "node tools/generate-llms.js || true && vite build && node tools/postbuild-hreflang.js",
     "start": "NODE_ENV=production node server/index.js",
     "lint": "eslint . --quiet",
     "lint:warn": "eslint ."
