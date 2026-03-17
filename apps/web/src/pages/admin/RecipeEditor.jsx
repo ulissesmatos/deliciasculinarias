@@ -28,6 +28,10 @@ const DIFFICULTIES = [
   { value: 'Hard',   label: 'Difícil' },
 ];
 
+const emptyNutrition = () => ({
+  calories: '', protein: '', fat: '', carbohydrates: '', fiber: '', sugar: '', sodium: '',
+});
+
 const emptyForm = () => ({
   title_pt: '', title_en: '', title_es: '',
   slug_pt: '', slug_en: '', slug_es: '',
@@ -39,8 +43,13 @@ const emptyForm = () => ({
   instructions_en: [''],
   instructions_es: [''],
   prep_time: '',
+  cook_time: '',
   servings: '',
   difficulty_level: 'Easy',
+  cuisine: '',
+  keywords: '',
+  video_url: '',
+  nutrition: emptyNutrition(),
   featured_image: null,
 });
 
@@ -86,8 +95,13 @@ const RecipeEditor = () => {
           instructions_en: r.instructions_en?.length ? r.instructions_en : [''],
           instructions_es: r.instructions_es?.length ? r.instructions_es : [''],
           prep_time: r.prep_time || '',
+          cook_time: r.cook_time || '',
           servings: r.servings || '',
           difficulty_level: r.difficulty_level || 'Easy',
+          cuisine: r.cuisine || '',
+          keywords: Array.isArray(r.keywords) ? r.keywords.join(', ') : (r.keywords || ''),
+          video_url: r.video_url || '',
+          nutrition: (r.nutrition && typeof r.nutrition === 'object') ? { ...emptyNutrition(), ...r.nutrition } : emptyNutrition(),
           featured_image: null,
         });
         if (r.featured_image_url) {
@@ -206,9 +220,15 @@ const RecipeEditor = () => {
       ingredients_pt: result.ingredients?.length ? result.ingredients : f.ingredients_pt,
       instructions_pt: result.instructions?.length ? result.instructions : f.instructions_pt,
       prep_time: result.prep_time || f.prep_time,
+      cook_time: result.cook_time ?? f.cook_time,
       servings: result.servings || f.servings,
       difficulty_level: ['Easy', 'Medium', 'Hard'].includes(result.difficulty_level)
         ? result.difficulty_level : f.difficulty_level,
+      cuisine: result.cuisine || f.cuisine,
+      keywords: Array.isArray(result.keywords) ? result.keywords.join(', ') : (result.keywords || f.keywords),
+      nutrition: (result.nutrition && typeof result.nutrition === 'object')
+        ? { ...emptyNutrition(), ...result.nutrition }
+        : f.nutrition,
     }));
     setActiveLang('pt');
     setShowAIModal(false);
@@ -290,8 +310,19 @@ const RecipeEditor = () => {
       data.append('instructions_en', JSON.stringify(clean(form.instructions_en).length ? clean(form.instructions_en) : clean(form.instructions_pt)));
       data.append('instructions_es', JSON.stringify(clean(form.instructions_es).length ? clean(form.instructions_es) : clean(form.instructions_pt)));
       data.append('prep_time', form.prep_time || 0);
+      data.append('cook_time', form.cook_time || 0);
       data.append('servings',  form.servings  || 0);
       data.append('difficulty_level', form.difficulty_level);
+      data.append('cuisine', form.cuisine || '');
+      data.append('video_url', form.video_url || '');
+      // keywords: store as JSON array
+      const kwArray = form.keywords
+        ? form.keywords.split(',').map(k => k.trim()).filter(Boolean)
+        : [];
+      data.append('keywords', JSON.stringify(kwArray));
+      // nutrition: only save if at least one field has a value
+      const hasNutrition = Object.values(form.nutrition).some(v => String(v).trim() !== '');
+      data.append('nutrition', hasNutrition ? JSON.stringify(form.nutrition) : 'null');
       if (form.featured_image) {
         data.append('featured_image', form.featured_image);
         data.append('featured_image_url', '');
@@ -683,6 +714,18 @@ const RecipeEditor = () => {
                 </div>
 
                 <div>
+                  <Label className="text-sm text-gray-700">Tempo de Cozedura (min)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    className="mt-1.5"
+                    placeholder="Ex: 20"
+                    value={form.cook_time}
+                    onChange={e => set('cook_time', e.target.value)}
+                  />
+                </div>
+
+                <div>
                   <Label className="text-sm text-gray-700">Porções</Label>
                   <Input
                     type="number"
@@ -705,6 +748,72 @@ const RecipeEditor = () => {
                       <option key={d.value} value={d.value}>{d.label}</option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <Label className="text-sm text-gray-700">Cozinha / Cuisine</Label>
+                  <Input
+                    className="mt-1.5"
+                    placeholder="Ex: Mediterranean, Portuguese, Italian"
+                    value={form.cuisine}
+                    onChange={e => set('cuisine', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm text-gray-700">
+                    Palavras-chave
+                    <span className="ml-1 font-normal text-gray-400 text-xs">separadas por vírgula</span>
+                  </Label>
+                  <Input
+                    className="mt-1.5"
+                    placeholder="Ex: sanduíche, frango grelhado, molho de iogurte"
+                    value={form.keywords}
+                    onChange={e => set('keywords', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm text-gray-700">URL do Vídeo</Label>
+                  <Input
+                    type="url"
+                    className="mt-1.5"
+                    placeholder="https://youtube.com/..."
+                    value={form.video_url}
+                    onChange={e => set('video_url', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Nutrition */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="font-semibold text-gray-900 mb-4">
+                  Informação Nutricional
+                  <span className="ml-1 text-xs font-normal text-gray-400">por porção</span>
+                </h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { key: 'calories',      label: 'Calorias',    placeholder: '320 kcal' },
+                    { key: 'protein',       label: 'Proteína',    placeholder: '18g' },
+                    { key: 'fat',           label: 'Gordura',     placeholder: '12g' },
+                    { key: 'carbohydrates', label: 'Hidratos',    placeholder: '35g' },
+                    { key: 'fiber',         label: 'Fibra',       placeholder: '3g' },
+                    { key: 'sugar',         label: 'Açúcar',      placeholder: '5g' },
+                    { key: 'sodium',        label: 'Sódio',       placeholder: '480mg' },
+                  ].map(({ key, label, placeholder }) => (
+                    <div key={key}>
+                      <Label className="text-xs text-gray-600">{label}</Label>
+                      <Input
+                        className="mt-1 text-xs"
+                        placeholder={placeholder}
+                        value={form.nutrition[key]}
+                        onChange={e => setForm(f => ({
+                          ...f,
+                          nutrition: { ...f.nutrition, [key]: e.target.value },
+                        }))}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 

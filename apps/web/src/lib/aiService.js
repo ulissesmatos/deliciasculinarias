@@ -137,8 +137,12 @@ function parseJSONResponse(text) {
  *   ingredients: string[],
  *   instructions: string[],
  *   prep_time: number,
+ *   cook_time: number,
  *   servings: number,
- *   difficulty_level: string
+ *   difficulty_level: string,
+ *   cuisine: string,
+ *   keywords: string[],
+ *   nutrition: { calories: string, protein: string, fat: string, carbohydrates: string, fiber: string, sugar: string, sodium: string }
  * }>}
  */
 export async function generateRecipe(prompt, lang = 'pt') {
@@ -158,18 +162,33 @@ IMPORTANT: Respond ONLY with a valid JSON object, no additional text. Use this e
   "ingredients": ["ingredient 1 with quantity", "ingredient 2 with quantity", ...],
   "instructions": ["Step 1 detailed instruction", "Step 2 detailed instruction", ...],
   "prep_time": 30,
+  "cook_time": 20,
   "servings": 4,
-  "difficulty_level": "Easy"
+  "difficulty_level": "Easy",
+  "cuisine": "Mediterranean",
+  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "nutrition": {
+    "calories": "320 kcal",
+    "protein": "18g",
+    "fat": "12g",
+    "carbohydrates": "35g",
+    "fiber": "3g",
+    "sugar": "5g",
+    "sodium": "480mg"
+  }
 }
 
 Rules:
 - difficulty_level must be exactly one of: "Easy", "Medium", "Hard"
-- prep_time is in minutes (integer)
+- prep_time and cook_time are in minutes (integers). cook_time is the active cooking time (0 if no cooking needed).
 - servings is an integer
 - ingredients should include quantities (e.g., "200g de frango grelhado")
 - instructions should be detailed, clear steps
 - Generate 5-15 ingredients and 4-10 instruction steps
 - Make it delicious and practical
+- cuisine should be in English (e.g., "Mediterranean", "American", "Italian", "Portuguese", "Mexican")
+- keywords should be 5-8 relevant search terms in ${langName}
+- nutrition values are estimated per serving; include units (kcal, g, mg)
 - The description field is critical for SEO and Generative Engine Optimization (GEO): write it as a rich, standalone paragraph that search engines and AI assistants can surface as an answer. Naturally include relevant keywords, the cuisine style, key ingredients, and preparation highlights.`
     },
     {

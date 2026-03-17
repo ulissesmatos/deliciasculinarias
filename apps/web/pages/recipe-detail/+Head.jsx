@@ -33,14 +33,43 @@ export default function Head() {
     author: { '@type': 'Organization', name: 'Delícias Culinárias' },
     datePublished: new Date(recipe.created).toISOString(),
     prepTime: recipe.prep_time ? `PT${recipe.prep_time}M` : undefined,
+    cookTime: recipe.cook_time ? `PT${recipe.cook_time}M` : undefined,
+    totalTime: (recipe.prep_time || recipe.cook_time)
+      ? `PT${(recipe.prep_time || 0) + (recipe.cook_time || 0)}M`
+      : undefined,
     recipeYield: recipe.servings ? `${recipe.servings}` : undefined,
-    recipeCategory: 'Sandwich',
+    recipeCuisine: recipe.cuisine || undefined,
+    keywords: Array.isArray(recipe.keywords) && recipe.keywords.length
+      ? recipe.keywords.join(', ')
+      : undefined,
     recipeIngredient: ingredients,
     recipeInstructions: instructions.map((step, i) => {
       const text = typeof step === 'string' ? step : step.step || step.text || '';
       const name = text.split(/[.:,;]/)[0].trim().slice(0, 60);
       return { '@type': 'HowToStep', position: i + 1, name, text };
     }),
+    nutrition: (() => {
+      const n = recipe.nutrition;
+      if (!n || typeof n !== 'object') return undefined;
+      if (!n.calories && !n.protein) return undefined;
+      return {
+        '@type': 'NutritionInformation',
+        ...(n.calories      && { calories:          n.calories }),
+        ...(n.protein       && { proteinContent:    n.protein }),
+        ...(n.fat           && { fatContent:        n.fat }),
+        ...(n.carbohydrates && { carbohydrateContent: n.carbohydrates }),
+        ...(n.fiber         && { fiberContent:      n.fiber }),
+        ...(n.sugar         && { sugarContent:      n.sugar }),
+        ...(n.sodium        && { sodiumContent:     n.sodium }),
+      };
+    })(),
+    video: recipe.video_url ? {
+      '@type': 'VideoObject',
+      name: title,
+      description: description || title,
+      thumbnailUrl: imageUrl,
+      contentUrl: recipe.video_url,
+    } : undefined,
   };
 
   return (
